@@ -1,0 +1,83 @@
+# THANK YOU - APIs & SERVICES USED
+
+## 3D Globe Visualization
+- **amCharts 5** - Interactive 3D globe with real geography
+  - Website: https://www.amcharts.com/
+  - Used for: AWS and Google Cloud infrastructure visualization
+  - Features: Real-time data, satellite connections, region markers
+
+## Cloud Infrastructure APIs
+- **AWS Service Health Dashboard** - Real AWS service status
+  - Endpoint: https://status.aws.amazon.com/rss/all.rss
+  - Used for: Live AWS service health monitoring
+  - Features: Incident tracking, service status, region health
+
+- **Google Cloud Status** - Real Google Cloud service status  
+  - Endpoint: https://status.cloud.google.com/incidents.json
+  - Used for: Live Google Cloud service health monitoring
+  - Features: Incident tracking, service status, region health
+
+## Learning & Knowledge APIs
+- **Wikipedia API** - Free encyclopedia content
+  - Website: https://en.wikipedia.org/api/
+  - Endpoint: https://en.wikipedia.org/api/rest_v1/page/summary/
+  - Used for: DevOps and technical learning content
+  - Features: Article summaries, descriptions, full content access
+  - Python Package: https://pypi.org/project/Wikipedia-API/
+
+## Radio Streaming APIs
+- **Radio Browser API** - Free community radio database
+  - Website: https://api.radio-browser.info/
+  - Endpoints: de1.api.radio-browser.info, de2.api.radio-browser.info, at1.api.radio-browser.info, nl1.api.radio-browser.info, fr1.api.radio-browser.info
+  - Used for: Real radio station discovery and streaming
+  - Features: 30,000+ stations, country/genre filtering, click tracking, voting
+
+- **SomaFM** - Independent internet radio
+  - Website: https://somafm.com/
+  - Used for: High-quality electronic/ambient music streams
+  - Features: DEF CON, Groove Salad, Beat Blender, Drone Zone
+
+- **Radio Paradise** - Commercial-free music
+  - Website: https://radioparadise.com/
+  - Used for: High-quality rock/alternative music streams
+  - Features: 320kbps AAC streams, listener-supported
+
+- **BBC World Service** - International news
+  - Website: https://www.bbc.co.uk/worldservice
+  - Used for: Global news and information
+  - Features: 24/7 news, multiple languages
+
+## Technical Infrastructure
+- **Next.js 14** - React framework
+  - Website: https://nextjs.org/
+  - Used for: Full-stack web application
+  - Features: API routes, server-side rendering, static generation
+
+- **Framer Motion** - Animation library
+  - Website: https://www.framer.com/motion/
+  - Used for: Smooth animations and transitions
+  - Features: Border animations, content reveals, interactive elements
+
+- **Tailwind CSS** - Utility-first CSS framework
+  - Website: https://tailwindcss.com/
+  - Used for: Responsive design and styling
+  - Features: Custom Tron color scheme, responsive layouts
+
+- **Three.js** - 3D graphics library
+  - Website: https://threejs.org/
+  - Used for: 3D stars and satellite visualizations
+  - Features: WebGL rendering, particle systems, animations
+
+## Special Thanks
+- **Radio Browser Community** - For maintaining the free radio database
+- **SomaFM** - For providing high-quality independent radio streams
+- **BBC** - For global news coverage
+- **Radio Paradise** - For commercial-free music
+- **amCharts** - For beautiful 3D visualizations
+- **Next.js Team** - For the amazing React framework
+- **Framer Motion** - For smooth animations
+- **Tailwind CSS** - For rapid UI development
+
+---
+Built with ❤️ by George Tatevosov
+DevOps Engineer 

@@ -1,0 +1,27 @@
+{
+  "name": "website-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@amcharts/amcharts5": "^5.10.0",
+    "@amcharts/amcharts5-geodata": "^5.1.2",
+    "@radiolise/metadata-client": "^1.0.1",
+    "framer-motion": "^10.16.4",
+    "next": "^14.0.0",
+    "radiobrowser-api-client": "^0.1.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5"
+  }
+}

@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ──────────────────────────────────────────────
+   Touch Keyboard Styles
+────────────────────────────────────────────── */
+.interactive-keyboard {
+  position: relative;
+  width: 100%;
+  max-width: 480px;          /* Slightly larger to frame keyboard */
+  margin: 0 auto;
+  padding: 10px 12px;        /* Safe inner padding */
+  box-sizing: border-box;
+  overflow: hidden;          /* Prevent glow overflow */
+}
+
+/* Keyboard container */
+#lt-keyboard {
+  position: relative;
+  width: 100%;
+  max-width: 440px;          /* Keeps it neatly inside frame */
+  margin: 0 auto;
+  padding: 6px 0;
+  z-index: 20;
+  box-sizing: border-box;
+}
+
+#lt-keyboard::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+/* Key styling */
+#lt-keyboard .key {
+  background-color: rgba(255,255,255,0);
+  border-radius: 2px;
+  float: left;
+  width: 26px;
+  text-align: center;
+  padding-top: 6px;
+  margin: 2px;
+  height: 18px;
+  font-size: 9px;
+  text-transform: uppercase;
+  color: #00eeee;
+  cursor: pointer;
+  border: 1px solid #00eeee;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#lt-keyboard .key.highlighted {
+  background-color: #00eeee;
+  color: #000;
+  box-shadow: 0 0 8px #00eeee;
+}
+
+/* Key positioning adjustments */
+#lt-keyboard #k-9 {
+  clear: both;
+  margin-left: 8px;
+}
+
+#lt-keyboard #k-500 {
+  clear: both;
+  margin-left: 16px;
+}
+
+#lt-keyboard #k-16 {
+  clear: both;
+  margin-left: 4px;
+}
+
+/* Spacebar */
+#lt-keyboard #k-32 {
+  clear: both;
+  width: 250px;
+  height: 3px;
+  border: 1px solid #00eeee;
+  border-radius: 2px;
+  margin-top: 4px;
+  margin-left: 60px;
+}
+
+/* ──────────────────────────────────────────────
+   Base Layer
+────────────────────────────────────────────── */
+@layer base {
+  body {
+    @apply bg-tron-darker text-tron-cyan;
+    font-family: 'Courier New', monospace;
+    overflow-x: hidden;
+  }
+}
+
+/* ──────────────────────────────────────────────
+   Utility Styles
+────────────────────────────────────────────── */
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 10px #00fff9, 0 0 20px #00fff9;
+  }
+
+  .border-glow {
+    box-shadow: 0 0 5px #00fff9, 0 0 10px #00fff9;
+  }
+
+  .border-glow-strong {
+    box-shadow: 0 0 10px #00fff9, 0 0 20px #00fff9, 0 0 30px #00fff9;
+  }
+}
+/* Prevent bottom clipping under animated frame */
+.main-content, .portal-frame, main {
+  padding-bottom: 60px; /* ensures keyboard stays inside glowing frame */
+  box-sizing: border-box;
+}
+
+/* ───────────────────────── */

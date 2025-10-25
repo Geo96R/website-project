@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.gitignore
+README.md
+*.log
+.DS_Store
+.env*.local
+k8s/
+*.yaml
+prod.yaml
+docker/
+.github/
+scripts/
