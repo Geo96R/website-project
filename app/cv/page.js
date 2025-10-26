@@ -219,6 +219,20 @@ export default function CV() {
 
   const handleSectionClick = (section) => {
     setActiveSection(section);
+    
+    // scroll to the content section - improved for mobile
+    setTimeout(() => {
+      const contentElement = document.querySelector('.cv-content-section');
+      if (contentElement) {
+        // use different scroll behavior for mobile
+        const isMobile = window.innerWidth <= 768;
+        contentElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: isMobile ? 'start' : 'center',
+          inline: 'nearest'
+        });
+      }
+    }, 200); // increased delay for mobile
   };
 
   const handleSkillClick = (skillIndex) => {
@@ -254,12 +268,12 @@ export default function CV() {
             href="/"
             className="px-4 py-2 border border-tron-cyan text-tron-cyan hover:bg-tron-cyan hover:text-black transition-colors"
           >
-            &lt; HOME
+            &lt; CONTROL CENTER
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 p-6 cv-content-section">
         
         {/* Left Sidebar - Visual Layout */}
         <div className="lg:col-span-1 space-y-4">
