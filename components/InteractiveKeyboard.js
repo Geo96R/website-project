@@ -30,7 +30,7 @@ export default function InteractiveKeyboard({ command }) {
           setCurrentIndex(0);
         }, 1000);
       }
-    }, 150); // 150ms per character for better visibility
+    }, 50); // faster keyboard
 
     return () => clearInterval(interval);
   }, [command]);
