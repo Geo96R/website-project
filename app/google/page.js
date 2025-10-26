@@ -33,7 +33,7 @@ export default function GoogleStreamPage() {
         clearInterval(interval);
         setShowGlobe(true);
       }
-    }, 500);
+    }, 200); // faster loading
 
     return () => clearInterval(interval);
   }, []);
@@ -181,18 +181,18 @@ export default function GoogleStreamPage() {
               <div className="text-sm font-mono text-tron-cyan">
                 GOOGLE CLOUD PLATFORM MONITOR
               </div>
-              <div className="text-[10px] text-tron-blue">
+              <div className="text-sm text-tron-blue">
                 REAL-TIME PUBLIC DATA
               </div>
-              <div className="text-[9px] text-gray-600">
+              <div className="text-xs text-gray-600">
                 Source: status.cloud.google.com
               </div>
             </div>
             <button
               onClick={() => router.push('/')}
-              className="px-3 py-1 border border-tron-blue/50 text-tron-blue hover:text-tron-cyan hover:border-tron-cyan transition-all text-[10px] font-mono"
+              className="px-4 py-2 border border-tron-blue/50 text-tron-blue hover:text-tron-cyan hover:border-tron-cyan transition-all text-sm font-mono"
             >
-              &lt; BACK TO CONTROL CENTER
+              &lt; CONTROL CENTER
             </button>
           </div>
 
@@ -210,7 +210,7 @@ export default function GoogleStreamPage() {
 
               <div className="border-t border-tron-blue/30 pt-3 mt-4">
                 <h3 className="text-[10px] font-bold text-tron-cyan mb-2 font-mono">GLOBAL INFRASTRUCTURE</h3>
-                <div className="space-y-1.5 text-[10px] font-mono">
+                <div className="space-y-1.5 text-sm font-mono">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Total Regions</span>
                     <span className="text-green-400">{googleStats?.totalRegions || 35}</span>
@@ -232,7 +232,7 @@ export default function GoogleStreamPage() {
 
               <div className="border-t border-tron-blue/30 pt-3 mt-4">
                 <h3 className="text-[10px] font-bold text-tron-cyan mb-2 font-mono">GLOBAL TRAFFIC</h3>
-                <div className="space-y-1.5 text-[10px] font-mono">
+                <div className="space-y-1.5 text-sm font-mono">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Requests/sec</span>
                     <span className="text-tron-cyan">{googleStats ? (googleStats.estimatedRequests / 1000000).toFixed(1) + 'M' : '3.8M'}</span>
@@ -254,7 +254,7 @@ export default function GoogleStreamPage() {
 
               <div className="border-t border-tron-blue/30 pt-3 mt-4">
                 <h3 className="text-[10px] font-bold text-tron-cyan mb-2 font-mono">SERVICE STATUS</h3>
-                <div className="space-y-1.5 text-[10px] font-mono">
+                <div className="space-y-1.5 text-sm font-mono">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Compute Engine</span>
                     <span className="text-green-400">OPERATIONAL</span>
