@@ -40,8 +40,25 @@ export default function MobileOrientationPrompt() {
   }, [userDismissed]);
 
   const handleDismiss = () => {
-    setUserDismissed(true);
-    setShowPrompt(false);
+    // check if device can rotate
+    if (screen.orientation && screen.orientation.lock) {
+      // try to lock to landscape
+      screen.orientation.lock('landscape').then(() => {
+        // success - device rotated
+        setUserDismissed(true);
+        setShowPrompt(false);
+      }).catch((error) => {
+        // failed - device might be locked or doesn't support it
+        console.log('Rotation failed:', error);
+        // just dismiss without alert - let user manually rotate
+        setUserDismissed(true);
+        setShowPrompt(false);
+      });
+    } else {
+      // no rotation api available - just dismiss
+      setUserDismissed(true);
+      setShowPrompt(false);
+    }
   };
 
   const handleEnterAnyway = () => {
@@ -66,7 +83,7 @@ export default function MobileOrientationPrompt() {
           exit={{ scale: 0.8, opacity: 0 }}
           className="bg-tron-darker border-2 border-tron-cyan p-6 max-w-sm mx-4 text-center"
         >
-          {/* Phone rotation animation */}
+          {/* Phone rotation animation - More realistic phone */}
           <motion.div
             animate={{ rotate: [0, 90, 0] }}
             transition={{ 
@@ -74,12 +91,25 @@ export default function MobileOrientationPrompt() {
               repeat: Infinity, 
               ease: "easeInOut" 
             }}
-            className="w-16 h-24 mx-auto mb-4 border-2 border-tron-cyan relative"
+            className="w-20 h-32 mx-auto mb-4 relative"
           >
-            <div className="absolute inset-2 border border-tron-cyan/50">
-              <div className="w-full h-full bg-tron-cyan/10 flex items-center justify-center">
-                <div className="text-tron-cyan text-xs font-mono">GEORGE</div>
+            {/* Phone body */}
+            <div className="w-full h-full bg-gray-800 border-2 border-tron-cyan rounded-2xl relative overflow-hidden">
+              {/* Screen */}
+              <div className="absolute inset-1 bg-black rounded-xl border border-tron-cyan/30">
+                <div className="w-full h-full bg-tron-cyan/5 flex items-center justify-center">
+                  <div className="text-tron-cyan text-xs font-mono">GEORGE</div>
+                </div>
               </div>
+              
+              {/* Home button */}
+              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-gray-600 rounded-full"></div>
+              
+              {/* Speaker */}
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-gray-600 rounded-full"></div>
+              
+              {/* Camera */}
+              <div className="absolute top-3 right-3 w-2 h-2 bg-gray-600 rounded-full"></div>
             </div>
           </motion.div>
 
