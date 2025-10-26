@@ -13,14 +13,14 @@ export default function AnimatedFrame() {
   }, []);
 
   useEffect(() => {
-    // only run on client side
+    // Only run on client side
     if (!isClient || typeof window === 'undefined') return;
     
     const calculateDimensions = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      // define content area
+      // Define the content area (slightly taller now)
       const contentWidth = Math.min(vw * 0.8, 1200);
       const contentHeight = Math.min(vh * 0.85, 800);
 
