@@ -21,7 +21,7 @@ export default function TerminalDisplay({ command }) {
       } else {
         clearInterval(typingInterval);
       }
-    }, 150); // Match keyboard timing
+    }, 50); // faster typing
 
     return () => clearInterval(typingInterval);
   }, [command]);
@@ -35,7 +35,7 @@ export default function TerminalDisplay({ command }) {
   }, []);
 
   return (
-    <div className="w-full font-mono text-xs">
+    <div className="w-full font-mono text-xs terminal-display">
       {/* Terminal Header */}
       <div className="flex items-center justify-between pb-2 border-b border-tron-blue/30 mb-3">
         <div className="text-tron-cyan">GEORGE DEVOPS TERMINAL <span className="text-tron-blue">v2.0</span></div>
