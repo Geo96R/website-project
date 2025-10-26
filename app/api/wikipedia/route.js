@@ -14,16 +14,16 @@ export async function GET(request) {
   }
 
   try {
-    // Handle topic disambiguation for DevOps-specific content
+    // handle topic disambiguation for devops stuff
     const disambiguatedTopic = disambiguateTopic(topic);
     
-    // Use Wikipedia's text extraction API for clean content
+    // use wikipedia text extraction API
     const textUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(disambiguatedTopic)}`;
     const extractUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(disambiguatedTopic)}`;
     
     console.log('Fetching Wikipedia content for:', disambiguatedTopic);
     
-    // Get summary first
+    // get summary first
     let response = await fetch(textUrl, {
       headers: {
         'User-Agent': 'George-DevOps-Learn/1.0 (https://website-project.com)',
@@ -41,9 +41,9 @@ export async function GET(request) {
       title = data.title || topic;
       url = data.content_urls?.desktop?.page || null;
       
-      // If we have content, try to get more detailed content
+      // try to get more content if summary is short
       if (content && content.length < 500) {
-        // Try to get more content from the full page
+        // try to get more content from full page
         const fullPageUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=false&explaintext=true&titles=${encodeURIComponent(topic)}`;
         
         try {
@@ -65,27 +65,27 @@ export async function GET(request) {
             }
           }
         } catch (err) {
-          console.log('Could not get full content, using summary');
+          console.log('could not get full content, using summary');
         }
       }
     } else {
       throw new Error(`Wikipedia API failed: ${response.status}`);
     }
     
-    // Format the content for our learning platform (clean, no markdown slop)
+    // format content for learning platform
     let formattedContent = `${title}\n\n`;
     
     if (content && content.length > 100) {
-      // Only add real Wikipedia content if we have substantial content
+      // only add real content if substantial
       formattedContent += cleanContent(content);
       
-      // Add Learn More at the bottom with clickable link
+      // add learn more link
       if (url) {
         formattedContent += `\n\nLEARN MORE\n\n`;
         formattedContent += `Read the full Wikipedia article: ${url}\n`;
       }
     } else {
-      // If no substantial content, return error
+      // if no content, return error
       return NextResponse.json({
         success: false,
         content: `ERROR: Could not find substantial content for "${topic}". Please try another topic.`,
@@ -104,7 +104,7 @@ export async function GET(request) {
   } catch (error) {
     console.error('Wikipedia API error:', error);
     
-    // Return fallback content
+    // fallback content
     const fallbackContent = `# ${topic}\n\n## Overview\n\nThis is a comprehensive learning resource for ${topic} in the context of DevOps and system administration.\n\n## Key Concepts\n\n- Core principles and fundamentals\n- Implementation strategies\n- Best practices and patterns\n- Integration with other tools\n\n## Learning Path\n\n1. **Foundation:** Understand the basics\n2. **Implementation:** Hands-on practice\n3. **Advanced:** Optimization and scaling\n4. **Integration:** Connect with other systems\n\n## Resources\n\n- Official documentation\n- Community resources\n- Practical examples\n- Case studies\n\n*Note: This content is generated for learning purposes. For the most up-to-date information, refer to official documentation.*`;
     
     return NextResponse.json({

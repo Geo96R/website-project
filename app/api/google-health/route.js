@@ -1,7 +1,7 @@
-// API route to fetch real Google Cloud service health data
+// gets Google Cloud service health data
 export async function GET() {
   try {
-    // Fetch Google Cloud Status incidents
+    // fetch from Google Cloud status API
     const response = await fetch('https://status.cloud.google.com/incidents.json', {
       cache: 'no-store',
       headers: {
@@ -16,7 +16,7 @@ export async function GET() {
 
     const data = await response.json();
     
-    // Transform Google Cloud incidents to our format
+    // format the data
     const items = data.incidents?.slice(0, 20).map((incident, index) => ({
       title: `[${incident.service_name || 'GLOBAL'}] ${incident.title}`,
       description: incident.description || 'Google Cloud service incident',
@@ -33,9 +33,9 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching Google Cloud health:', error);
     
-    // Return fallback data if API fails
+    // fallback if API fails
     return Response.json({
-      success: true, // Still success, but with fallback data
+      success: true, // still success but with fallback
       items: [
         {
           title: '[GLOBAL] All Google Cloud services operating normally',

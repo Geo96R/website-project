@@ -9,7 +9,7 @@ export async function GET(request) {
   const search = url.searchParams.get('search');
   
   try {
-    // Try multiple Radio Browser API endpoints (as per documentation)
+    // try multiple radio browser endpoints
     const apiEndpoints = [
       'https://de1.api.radio-browser.info',
       'https://de2.api.radio-browser.info', 
@@ -20,7 +20,7 @@ export async function GET(request) {
     
     let apiUrl;
     if (search) {
-      // Search across name, country, and tags
+    // search by name, country, or tags
       apiUrl = `${apiEndpoints[0]}/json/stations/search?name=${encodeURIComponent(search)}`;
     } else if (country && country !== 'All origins') {
       apiUrl = `${apiEndpoints[0]}/json/stations/bycountry/${encodeURIComponent(country)}`;
@@ -30,7 +30,7 @@ export async function GET(request) {
       apiUrl = `${apiEndpoints[0]}/json/stations/topclick/200`;
     }
     
-    // Add query parameters
+    // add query params
     const radioBrowserUrl = new URL(apiUrl);
     radioBrowserUrl.searchParams.set('hidebroken', 'true');
     radioBrowserUrl.searchParams.set('order', 'clickcount');
@@ -43,7 +43,7 @@ export async function GET(request) {
     console.log('Genre filter:', genre);
     console.log('Country filter:', country);
     
-    // Try multiple endpoints if one fails
+    // try different endpoints if one fails
     let response;
     let lastError;
     
@@ -54,7 +54,7 @@ export async function GET(request) {
         
         // Create AbortController for timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        // 10 second timeout
         
         response = await fetch(currentUrl, {
           headers: {
@@ -89,7 +89,7 @@ export async function GET(request) {
       throw new Error('Invalid response from Radio Browser API');
     }
     
-    // Filter and format stations
+    // filter and format stations
     let formattedStations = data
       .filter(station => {
         return station.url && 
@@ -99,7 +99,7 @@ export async function GET(request) {
                !station.broken;
       });
 
-    // If we have a search term, do additional filtering on the client side
+    // extra filtering for search
     if (search) {
       const searchLower = search.toLowerCase();
       formattedStations = formattedStations.filter(station => {
@@ -139,7 +139,7 @@ export async function GET(request) {
   } catch (error) {
     console.error('Radio Browser API error:', error);
     
-    // Return fallback stations
+    // fallback stations
     const fallbackStations = [
       { name: 'BBC World Service', country: 'United Kingdom', genre: 'News', frequency: 87.5, bitrate: 128, codec: 'MP3', tags: 'news, international', url: 'http://stream.live.vc.bbcmedia.co.uk/bbc_world_service' },
       { name: 'Radio Paradise', country: 'United States', genre: 'Rock', frequency: 88.1, bitrate: 320, codec: 'AAC', tags: 'rock, alternative, indie', url: 'http://stream.radioparadise.com/aac-320' },

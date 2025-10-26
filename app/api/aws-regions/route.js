@@ -28,9 +28,9 @@ export async function GET() {
     const stats = {
       totalRegions: regions.length,
       operationalRegions: regions.filter(r => r.status === 'operational').length,
-      availabilityZones: regions.length * 3, // Each region typically has 3 AZs
+      availabilityZones: regions.length * 3, // Each region typically has 3 AZs can increase or decrease the number of availability zones if something changes in the future
       edgeLocations: 450, // AWS has ~450 edge locations globally
-      estimatedRequests: Math.floor(Math.random() * 1000000 + 5000000), // 5-6M requests/sec globally
+      estimatedRequests: Math.floor(Math.random() * 1000000 + 5000000), 
     };
 
     return Response.json({

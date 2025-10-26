@@ -1,7 +1,7 @@
-// API route to fetch real AWS service health data
+// gets AWS service health data
 export async function GET() {
   try {
-    // Fetch AWS Service Health Dashboard RSS feed
+    // fetch from AWS RSS feed
     const response = await fetch('https://status.aws.amazon.com/rss/all.rss', {
       cache: 'no-store',
       headers: {
@@ -16,7 +16,7 @@ export async function GET() {
 
     const rssText = await response.text();
     
-    // Parse RSS feed (simple XML parsing)
+    // parse RSS feed
     const items = [];
     const itemRegex = /<item>([\s\S]*?)<\/item>/g;
     let match;
@@ -39,7 +39,7 @@ export async function GET() {
       }
     }
     
-    // Get recent items (last 20)
+    // get last 20 items
     const recentItems = items.slice(0, 20);
     
     return Response.json({
@@ -51,7 +51,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching AWS health:', error);
     
-    // Return fallback data if RSS fails
+    // fallback if RSS fails
     return Response.json({
       success: true,
       items: [

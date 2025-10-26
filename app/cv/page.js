@@ -13,10 +13,10 @@ export default function CV() {
   const [hasDecodedOnce, setHasDecodedOnce] = useState(false);
   const [openSkillDropdown, setOpenSkillDropdown] = useState(null);
 
-  // Alien language characters for the decoding effect
+  // Alien language characters for the decoding effect on the CV page.
   const alienChars = 'αβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ∫∑∏∂∇∆∞√≤≥≠≈≡∝∈∉⊂⊃∪∩∧∨¬∀∃∴∵→←↑↓↔↕↖↗↘↙';
 
-  // Calculate age from July 11, 1996
+  // Calculate age from July 11, 1996(This is my date but you change for your self)
   const calculateAge = () => {
     const birthDate = new Date('1996-07-11');
     const today = new Date();
@@ -28,7 +28,7 @@ export default function CV() {
     return age;
   };
 
-  // Your real CV content
+  // Your real CV content. You can change the content to your own.
   const cvContent = {
     overview: {
       title: 'SYSTEM OVERVIEW',
@@ -93,6 +93,7 @@ export default function CV() {
         }
       ]
     },
+    // Skills section. You can change the skills to your own or add more just add "," followed by double quotes of the skill
     skills: {
       title: 'SKILLS MATRIX',
       content: [
@@ -132,6 +133,7 @@ export default function CV() {
         { name: 'Lightsail', status: 'Active', color: 'yellow' }
       ]
     },
+    // Not much to say here..
     profile: {
       title: 'PROFILE MATRIX',
       content: {
@@ -145,7 +147,7 @@ export default function CV() {
     }
   };
 
-  // Decode only once on page load
+  // Decode only once on page load(To avoid spaming this each reload of /cv when you change to profile/skills/etc)
   useEffect(() => {
     if (isDecoding && !hasDecodedOnce) {
       const texts = {
@@ -361,7 +363,6 @@ export default function CV() {
                 </div>
               </div>
               
-              {/* Right side - Avatar (MUCH BIGGER) */}
               <div className="w-32 h-32 border-2 border-tron-cyan/30 bg-gradient-to-br from-tron-cyan/10 to-tron-blue/10 flex items-center justify-center relative overflow-hidden">
                 <PixelAvatar 
                   frameW={128}

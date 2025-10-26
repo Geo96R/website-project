@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Comprehensive DevOps Learning Topics (100+ topics) - Using specific names to avoid ambiguity
+// DevOps learning page using wikipedia API to get the content for the topics. based on a predefined list of topics.
 const devopsTopics = [
   // Cloud Platforms
   'Amazon Web Services', 'Google Cloud Platform', 'Microsoft Azure', 'IBM Cloud', 'Oracle Cloud',

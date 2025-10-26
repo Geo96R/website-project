@@ -85,7 +85,7 @@ export default function RadioStream() {
     fetchRadioStations(selectedCountry, selectedGenre);
   }, [selectedCountry, selectedGenre, searchTerm]);
 
-  // Initialize presets
+  // Initialize presets (These are my choice here)
   useEffect(() => {
     const defaultPresets = [
       { name: 'J-Club Powerplay HipHop', country: 'Germany', genre: 'Hip-Hop', frequency: 102.1, bitrate: 128, codec: 'MP3', tags: 'hip-hop, rap, german', url: 'http://streams.radiobob.de/bob-live/mp3-192/mediaplayer' },
@@ -148,7 +148,7 @@ export default function RadioStream() {
       return Math.abs(curr.frequency - newFreq) < Math.abs(prev.frequency - newFreq) ? curr : prev;
     });
     
-    // Auto-tune to closest station within 0.5 MHz
+    // Auto tune to closest station within 0.5 MHz(can change the frequency tolerance if you want)
     if (Math.abs(closestStation.frequency - newFreq) <= 0.5) {
       handleStationSelect(closestStation);
     }

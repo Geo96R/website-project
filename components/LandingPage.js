@@ -8,26 +8,44 @@ import StreamSelector from './StreamSelector';
 import TerminalDisplay from './TerminalDisplay';
 import InteractiveKeyboard from './InteractiveKeyboard';
 
-// Dynamic import to prevent SSR issues
+// dynamic import to prevent SSR issues
 const AnimatedFrame = dynamic(() => import('./AnimatedFrame'), { ssr: false });
 
 export default function LandingPage() {
   const router = useRouter();
   const [terminalCommand, setTerminalCommand] = useState('');
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Only run on client side
+    // only run on client side
     if (typeof window === 'undefined') return;
+    
+    // check if mobile device
+    const checkMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isTablet = /iPad|Android/i.test(navigator.userAgent) && 'ontouchstart' in window;
+      setIsMobile(isMobileDevice || isTablet);
+    };
+    
+    checkMobile();
     
     // Calculate the same dimensions as AnimatedFrame
     const calculateDimensions = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       
-      // Same calculation as AnimatedFrame
-      const contentWidth = Math.min(vw * 0.8, 1200); // Max 1200px width
-      const contentHeight = Math.min(vh * 0.85, 800); // Back to original 0.85, max 800px
+      // Mobile landscape optimizations
+      let contentWidth, contentHeight;
+      if (isMobile && vh < vw) {
+        // Landscape mobile - use more screen space
+        contentWidth = Math.min(vw * 0.95, 1200);
+        contentHeight = Math.min(vh * 0.9, 600);
+      } else {
+        // Desktop or portrait mobile
+        contentWidth = Math.min(vw * 0.8, 1200);
+        contentHeight = Math.min(vh * 0.85, 800);
+      }
       
       setContainerDimensions({
         width: contentWidth,

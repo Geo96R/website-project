@@ -38,7 +38,7 @@ export default function AwsStreamPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Simulate live metrics
+  // Simulate live metrics for the CPU, Memory, and Network usage
   useEffect(() => {
     if (!showGlobe) return;
 
@@ -52,7 +52,7 @@ export default function AwsStreamPage() {
     return () => clearInterval(metricsInterval);
   }, [showGlobe]);
 
-  // Fetch real AWS health data
+  // Fetch real AWS health data from the API route
   useEffect(() => {
     if (!showGlobe) return;
 
@@ -67,7 +67,6 @@ export default function AwsStreamPage() {
           
           // Convert health items to activity feed
           const activities = healthData.items.slice(0, 8).map((item, index) => {
-            // Extract region from title if present
             const regionMatch = item.title.match(/\[(.*?)\]/);
             const region = regionMatch ? regionMatch[1] : 'global';
             
@@ -99,7 +98,7 @@ export default function AwsStreamPage() {
           setActivityFeed(activities);
         }
 
-        // Fetch AWS regions and stats
+        // Call AWS regions and stats from the API route
         const regionsResponse = await fetch('/api/aws-regions');
         const regionsData = await regionsResponse.json();
         
@@ -114,7 +113,7 @@ export default function AwsStreamPage() {
 
     fetchAWSData();
     
-    // Refresh every 2 minutes
+    // Refresh every 2 minutes can increase or decrease the time interval depending on your needs. 120000 is 2 minutes in milliseconds.
     const interval = setInterval(fetchAWSData, 120000);
     
     return () => clearInterval(interval);
@@ -173,7 +172,7 @@ export default function AwsStreamPage() {
         </motion.div>
       )}
 
-      {/* Main Visualization - Fullscreen like Tron */}
+      {/* Main Visualization - AWS Global Infrastructure Monitor */}
       {showGlobe && (
         <div className="h-screen flex flex-col">
           {/* Top Bar */}

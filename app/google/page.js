@@ -52,13 +52,13 @@ export default function GoogleStreamPage() {
     return () => clearInterval(metricsInterval);
   }, [showGlobe]);
 
-  // Fetch real Google Cloud health data
+  // Call real Google Cloud health data
   useEffect(() => {
     if (!showGlobe) return;
 
     const fetchGoogleData = async () => {
       try {
-        // Fetch Google Cloud status incidents
+        // Call Google Cloud status incidents
         const healthResponse = await fetch('/api/google-health');
         const healthData = await healthResponse.json();
         
@@ -67,7 +67,6 @@ export default function GoogleStreamPage() {
           
           // Convert health items to activity feed
           const activities = healthData.items.slice(0, 8).map((item, index) => {
-            // Extract region from title if present
             const regionMatch = item.title.match(/\[(.*?)\]/);
             const region = regionMatch ? regionMatch[1] : 'global';
             

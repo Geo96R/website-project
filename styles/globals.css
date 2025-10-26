@@ -120,3 +120,105 @@
 }
 
 /* ───────────────────────── */
+
+/* Mobile Landscape Optimizations */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .main-content, .portal-frame, main {
+    padding-bottom: 20px; /* Reduce bottom padding in landscape */
+  }
+  
+  #lt-keyboard {
+    max-width: 100%;
+    padding: 4px 0;
+  }
+  
+  #lt-keyboard .key {
+    width: 22px;
+    height: 16px;
+    font-size: 8px;
+    margin: 1px;
+  }
+  
+  #lt-keyboard #k-32 {
+    width: 200px;
+    margin-left: 40px;
+  }
+  
+  /* Fix AWS/Google pages for mobile landscape */
+  .h-screen {
+    min-height: 100vh;
+    height: auto !important;
+  }
+  
+  .grid-cols-12 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .col-span-8 {
+    grid-column: span 1 !important;
+  }
+  
+  .col-span-2 {
+    grid-column: span 1 !important;
+  }
+  
+  /* Make content scrollable */
+  .flex-1 {
+    overflow-y: auto;
+    max-height: calc(100vh - 60px);
+  }
+}
+
+/* Mobile Portrait - Hide content when orientation prompt is shown */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  .mobile-portrait-hidden {
+    display: none;
+  }
+  
+  /* Hide border animation when mobile prompt is shown */
+  .portal-frame,
+  .animated-frame {
+    display: none !important;
+  }
+}
+
+/* Mobile-specific fixes for AWS/Google pages */
+@media screen and (max-width: 768px) {
+  /* Fix fullscreen pages on mobile */
+  .h-screen {
+    min-height: 100vh;
+    height: auto !important;
+    overflow-y: auto;
+  }
+  
+  /* Make grid layouts mobile-friendly */
+  .grid-cols-12 {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .col-span-8,
+  .col-span-2 {
+    width: 100% !important;
+    flex: none !important;
+  }
+  
+  /* Ensure content is scrollable */
+  .flex-1 {
+    overflow-y: auto;
+    max-height: none;
+  }
+  
+  /* Fix activity feeds */
+  .h-64 {
+    height: auto !important;
+    max-height: 200px;
+  }
+}
+
+/* Tablet optimizations */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .main-content, .portal-frame, main {
+    padding-bottom: 40px;
+  }
+}
