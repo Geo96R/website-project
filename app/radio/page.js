@@ -156,30 +156,23 @@ export default function RadioStream() {
 
   return (
     <div className="min-h-screen bg-black text-tron-cyan">
+      {/* Header with Control Center Button */}
+      <div className="border-b border-tron-cyan/30 p-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-tron-cyan font-mono">
+            RADIO <span className="text-tron-blue">.STREAM</span>
+          </h1>
+          <button
+            onClick={() => window.history.back()}
+            className="px-4 py-2 border border-tron-cyan text-tron-cyan hover:bg-tron-cyan hover:text-black transition-colors"
+          >
+            &lt; CONTROL CENTER
+          </button>
+        </div>
+      </div>
       {/* Hidden Audio Element */}
       <audio ref={audioRef} preload="none" />
       
-      {/* Header */}
-      <div className="border-b border-tron-cyan/30 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-tron-cyan font-mono">
-              RADIO <span className="text-tron-blue">.TERMINAL</span>
-            </h1>
-            <p className="text-sm text-gray-400 mt-1">Real Radio Stream Interface</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={togglePlayPause}
-              className="px-4 py-2 border border-tron-cyan text-tron-cyan hover:bg-tron-cyan hover:text-black transition-colors"
-            >
-              {isPlaying ? 'PAUSE' : 'PLAY'}
-            </button>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-          </div>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
         
         {/* Left Column - Station Info & Controls */}
