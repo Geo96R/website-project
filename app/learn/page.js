@@ -153,11 +153,19 @@ export default function LearnStream() {
     <div className="min-h-screen bg-black text-tron-cyan font-mono">
       {/* Header */}
       <div className="border-b border-tron-cyan/30 p-6">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-tron-cyan mb-2">
-            LEARN <span className="text-tron-blue">.STREAM</span>
-          </h1>
-          <p className="text-gray-400">DevOps Knowledge Base - Continuous Learning Platform</p>
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-tron-cyan mb-2">
+              LEARN <span className="text-tron-blue">.STREAM</span>
+            </h1>
+            <p className="text-gray-400">DevOps Knowledge Base - Continuous Learning Platform</p>
+          </div>
+          <button
+            onClick={() => window.history.back()}
+            className="px-4 py-2 border border-tron-cyan text-tron-cyan hover:bg-tron-cyan hover:text-black transition-colors"
+          >
+            &lt; CONTROL CENTER
+          </button>
         </div>
       </div>
 
