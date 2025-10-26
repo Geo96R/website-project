@@ -75,12 +75,25 @@ export default function LandingPage() {
   }, []);
 
   const handleStreamSelect = (streamId) => {
-    const fullCommand = `./launch_${streamId}_stream.sh`;
+    const fullCommand = `./launch_${streamId}.sh`;
     setTerminalCommand(fullCommand);
-    // Wait for full command to be typed before navigation (both terminal and keyboard sync at 150ms)
+    
+    // Auto-scroll to terminal on mobile
+    setTimeout(() => {
+      const terminalElement = document.querySelector('.terminal-display');
+      if (terminalElement) {
+        terminalElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 500);
+    
+    // faster navigation - adjust speed based on device
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const typingSpeed = isMobile ? 50 : 250; // slower on PC, faster on mobile
+    const delay = isMobile ? 500 : 1000; // shorter delay on mobile
+    
     setTimeout(() => {
       router.push(`/${streamId}`);
-    }, fullCommand.length * 150 + 2000); // Time for typing + 2 second delay
+    }, fullCommand.length * typingSpeed + delay);
   };
 
   return (
