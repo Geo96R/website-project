@@ -6,6 +6,8 @@ a bit of hopefull inspirations to try do things that are perhaps at times beyond
 inspiring to be better and share my knowledge if can is why i made this, While i don't have 500years of experience from the year 1525(Sorry was born too late) i can still make up with the passion i have for the field for the learning.
 Enjoy what i made, be happy be healthy work hard and believe in your self.
 
+**Current Version: v1.1** - Major responsive design overhaul with proper mobile support
+
 Note any and all here may be subject for future change if i want to scrape and redo stuff this why ill have versions you can use wayback archive(if they index this beautiful creation) to see previous version
 i will try keep it updated as much as possible wether it is new docker/k8s versions or next js. but life happens so be strong! and google away
 
