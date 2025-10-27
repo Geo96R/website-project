@@ -132,7 +132,7 @@ export default function StreamSelector({ onStreamSelect }) {
                     : 'bg-gray-700'}
                 `} />
                 
-                {/* 3-angle rectangle (numpad 14563 shape) - centered on folder bottom */}
+                {/* 3-angle rectangle - centered on folder bottom */}
                 <div className={`
                   absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-3 transition-all duration-300
                   ${hoveredStream === stream.id && stream.active
