@@ -32,7 +32,10 @@ export default function AWSGlobe({ awsStats }) {
           root._logo.dispose();
         }
 
-        // Create map chart - FIXED positioning and zoom disabled
+        // Create map chart - FIXED positioning and zoom disabled, responsive scale
+        const isMobileView = containerRef.current.clientWidth < 768;
+        const globeScale = isMobileView ? 0.65 : 0.88; // Even smaller on mobile to fit completely
+        
         chart = root.container.children.push(
           am5map.MapChart.new(root, {
             projection: am5map.geoOrthographic(),
@@ -45,7 +48,7 @@ export default function AWSGlobe({ awsStats }) {
             pinchZoom: false, // DISABLE PINCH ZOOM
             maxZoomLevel: 1, // LOCK ZOOM
             minZoomLevel: 1, // LOCK ZOOM
-            scale: 0.88, // 10% larger than 0.8
+            scale: globeScale,
             centerX: am5.percent(50),
             centerY: am5.percent(50),
             x: am5.percent(50),
@@ -199,7 +202,42 @@ export default function AWSGlobe({ awsStats }) {
           });
         });
 
-        // City locations for satellite paths
+        // Realistic data traffic routes between major data centers through continents
+        const trafficRoutes = [
+          // Trans-Atlantic (US <-> Europe)
+          { from: { lat: 40.7128, lon: -74.0060, name: "New York" }, to: { lat: 51.5074, lon: -0.1278, name: "London" } },
+          { from: { lat: 37.7749, lon: -122.4194, name: "San Francisco" }, to: { lat: 48.8566, lon: 2.3522, name: "Paris" } },
+          
+          // Trans-Pacific (routing through northern route)
+          { from: { lat: 37.7749, lon: -122.4194, name: "San Francisco" }, to: { lat: 35.6762, lon: 139.6503, name: "Tokyo" } },
+          { from: { lat: 47.6062, lon: -122.3321, name: "Seattle" }, to: { lat: 64.2008, lon: -149.4937, name: "Alaska" } }, // Through Alaska
+          
+          // Europe <-> Asia
+          { from: { lat: 50.1109, lon: 8.6821, name: "Frankfurt" }, to: { lat: 55.7558, lon: 37.6173, name: "Moscow" } },
+          { from: { lat: 51.5074, lon: -0.1278, name: "London" }, to: { lat: 25.2048, lon: 55.2708, name: "Dubai" } },
+          { from: { lat: 55.7558, lon: 37.6173, name: "Moscow" }, to: { lat: 39.9042, lon: 116.4074, name: "Beijing" } },
+          
+          // Asia Internal  
+          { from: { lat: 39.9042, lon: 116.4074, name: "Beijing" }, to: { lat: 35.6762, lon: 139.6503, name: "Tokyo" } },
+          { from: { lat: 35.6762, lon: 139.6503, name: "Tokyo" }, to: { lat: 37.5665, lon: 126.9780, name: "Seoul" } },
+          { from: { lat: 1.3521, lon: 103.8198, name: "Singapore" }, to: { lat: -6.2088, lon: 106.8456, name: "Jakarta" } }, // Singapore to Jakarta
+          { from: { lat: 25.2048, lon: 55.2708, name: "Dubai" }, to: { lat: 19.0760, lon: 72.8777, name: "Mumbai" } },
+          
+          // Americas
+          { from: { lat: 40.7128, lon: -74.0060, name: "New York" }, to: { lat: -23.5505, lon: -46.6333, name: "São Paulo" } },
+          { from: { lat: 19.4326, lon: -99.1332, name: "Mexico City" }, to: { lat: -23.5505, lon: -46.6333, name: "São Paulo" } },
+          { from: { lat: 40.7128, lon: -74.0060, name: "New York" }, to: { lat: 45.5017, lon: -73.5673, name: "Montreal" } },
+          
+          // Africa-Middle East
+          { from: { lat: -26.2041, lon: 28.0473, name: "Johannesburg" }, to: { lat: 30.0444, lon: 31.2357, name: "Cairo" } },
+          { from: { lat: 30.0444, lon: 31.2357, name: "Cairo" }, to: { lat: 25.2048, lon: 55.2708, name: "Dubai" } },
+        ];
+
+        // Track active satellites - limit to 7-8 total
+        let activeSatelliteCount = 0;
+        const MAX_SATELLITES = 8;
+        
+        // City locations kept for reference
         const cityLocations = [
           { lat: 40.7128, lon: -74.0060, name: "New York" },
           { lat: 51.5074, lon: -0.1278, name: "London" },
@@ -357,10 +395,12 @@ export default function AWSGlobe({ awsStats }) {
         let satellites = [];
 
         // FIXED: Better lat/lon to 3D conversion matching globe scale
-        const latLonToVector3 = (lat, lon, radius = 1.05) => {
+        // This converts lat/lon to 3D coordinates that rotate WITH the globe
+        const latLonToVector3 = (lat, lon, radius = 1.05, rotationOffset = 0) => {
           // Adjusted to match the globe's visual size
           const phi = (90 - lat) * (Math.PI / 180);
-          const theta = (lon + 180) * (Math.PI / 180);
+          // Apply rotation offset to longitude to keep satellites fixed to globe surface
+          const theta = (lon + 180 + rotationOffset) * (Math.PI / 180);
           
           return new THREE.Vector3(
             -(radius * Math.sin(phi) * Math.cos(theta)),
@@ -369,87 +409,92 @@ export default function AWSGlobe({ awsStats }) {
           );
         };
 
-        // Create satellite function
+        // Create satellite function - SIMPLE APPROACH
         const createSatellite = () => {
-          // Pick two different cities
-          const fromCity = cityLocations[Math.floor(Math.random() * cityLocations.length)];
-          let toCity = cityLocations[Math.floor(Math.random() * cityLocations.length)];
-          
-          // Ensure they're different and have some distance
-          while (toCity === fromCity) {
-            toCity = cityLocations[Math.floor(Math.random() * cityLocations.length)];
+          if (activeSatelliteCount >= MAX_SATELLITES) {
+            return;
           }
+          
+          const route = trafficRoutes[Math.floor(Math.random() * trafficRoutes.length)];
+          
+          // Calculate positions WITHOUT rotation offset - positions are fixed in world space
+          const fromPos = latLonToVector3(route.from.lat, route.from.lon, 1.08, 0);
+          const toPos = latLonToVector3(route.to.lat, route.to.lon, 1.08, 0);
 
-          // Get 3D positions - closer to globe surface
-          const fromPos = latLonToVector3(fromCity.lat, fromCity.lon, 1.08);
-          const toPos = latLonToVector3(toCity.lat, toCity.lon, 1.08);
-
-          // Create arc with reasonable height
+          // Create arc
           const midPoint = new THREE.Vector3().addVectors(fromPos, toPos).multiplyScalar(0.5);
           const distance = fromPos.distanceTo(toPos);
-          const arcHeight = Math.min(0.3, 0.1 + distance * 0.08); // Limited arc height
+          const arcHeight = Math.min(0.3, 0.1 + distance * 0.08);
           midPoint.normalize().multiplyScalar(1.08 + arcHeight);
 
           const curve = new THREE.QuadraticBezierCurve3(fromPos, midPoint, toPos);
-          const points = curve.getPoints(40);
+          const points = curve.getPoints(50); // More points for smoother line
           
           // Path line
           const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
           const lineMaterial = new THREE.LineBasicMaterial({
-            color: 0x00ddff,
+            color: 0x00ffff,
             transparent: true,
-            opacity: 0.2,
-            linewidth: 1,
+            opacity: 0.8,
+            linewidth: 3,
           });
           const line = new THREE.Line(lineGeometry, lineMaterial);
           satellitesGroup.add(line);
 
-          // Satellite dot - smaller
-          const satGeometry = new THREE.SphereGeometry(0.008, 6, 6);
+          // Satellite dot
+          const satGeometry = new THREE.SphereGeometry(0.01, 8, 8);
           const satMaterial = new THREE.MeshBasicMaterial({ 
             color: 0xffcc00,
             transparent: true,
-            opacity: 0.9,
+            opacity: 0.95,
           });
           const satellite = new THREE.Mesh(satGeometry, satMaterial);
           satellitesGroup.add(satellite);
 
-          // Glowing trail - smaller
-          const trailGeometry = new THREE.SphereGeometry(0.012, 6, 6);
+          // Trail
+          const trailGeometry = new THREE.SphereGeometry(0.015, 8, 8);
           const trailMaterial = new THREE.MeshBasicMaterial({
             color: 0xffcc00,
             transparent: true,
-            opacity: 0.3,
+            opacity: 0.6,
           });
           const trail = new THREE.Mesh(trailGeometry, trailMaterial);
           satellitesGroup.add(trail);
 
-          // Store satellite data
+          activeSatelliteCount++;
+
           satellites.push({
             mesh: satellite,
             trail: trail,
             line: line,
             curve: curve,
             progress: 0,
-            speed: 0.002 + Math.random() * 0.003, // Slower speed
+            speed: 0.0015 + Math.random() * 0.002,
           });
 
-          // Remove after completion
           setTimeout(() => {
             satellitesGroup.remove(line);
             satellitesGroup.remove(satellite);
             satellitesGroup.remove(trail);
             satellites = satellites.filter(s => s.mesh !== satellite);
-          }, 30000);
+            activeSatelliteCount--;
+          }, 35000);
         };
 
-        // Create initial satellites
-        for (let i = 0; i < 6; i++) {
-          setTimeout(() => createSatellite(), i * 800);
+        // Create initial satellites - start with 3-4
+        const initialCount = 3 + Math.floor(Math.random() * 2); // 3 or 4
+        for (let i = 0; i < initialCount; i++) {
+          setTimeout(() => createSatellite(), i * 1000);
         }
         
-        // Keep creating new satellites
-        setInterval(createSatellite, 3000);
+        // Keep creating new satellites with alternating pattern
+        // Create bursts of 1-2 satellites every 4-6 seconds
+        setInterval(() => {
+          const burstSize = 1 + Math.floor(Math.random() * 2); // 1 or 2
+          for (let i = 0; i < burstSize; i++) {
+            setTimeout(() => createSatellite(), i * 800);
+          }
+        }, 4000 + Math.random() * 2000); // 4-6 seconds between bursts
 
         // FIXED SYNC: Track rotation properly
         let lastFrameTime = Date.now();
@@ -466,26 +511,36 @@ export default function AWSGlobe({ awsStats }) {
           stars.rotation.y += 0.0002;
           stars.rotation.x += 0.0001;
           
-          // CRITICAL FIX: Sync satellites with globe using the ACTUAL rotation values
+          // Sync satellitesGroup with globe rotation
           const currentRotationX = chart.get("rotationX") || 0;
           const currentRotationY = chart.get("rotationY") || 0;
-          
-          // Direct sync - satellites follow globe rotation exactly
           satellitesGroup.rotation.y = (currentRotationX * Math.PI) / 180;
           satellitesGroup.rotation.x = -(currentRotationY * Math.PI) / 180;
           
-          // Animate satellites along their paths
+          // Animate satellites along their paths - SIMPLE
           satellites.forEach(sat => {
             sat.progress += sat.speed;
-            if (sat.progress <= 1) {
+            
+            if (sat.progress <= 0.98) {
               const pos = sat.curve.getPoint(sat.progress);
               sat.mesh.position.copy(pos);
               sat.trail.position.copy(pos);
               
               // Fade effects
-              sat.line.material.opacity = Math.sin(sat.progress * Math.PI) * 0.2;
-              sat.trail.material.opacity = (1 - sat.progress) * 0.3;
-              sat.mesh.material.opacity = 0.9 - (sat.progress * 0.2);
+              if (sat.progress > 0.9) {
+                const fadeOutProgress = (sat.progress - 0.9) / 0.08;
+                sat.line.material.opacity = Math.sin(sat.progress * Math.PI) * 0.8 * (1 - fadeOutProgress);
+                sat.trail.material.opacity = (1 - sat.progress) * 0.6 * (1 - fadeOutProgress);
+                sat.mesh.material.opacity = (0.95 - (sat.progress * 0.1)) * (1 - fadeOutProgress);
+              } else {
+                sat.line.material.opacity = Math.sin(sat.progress * Math.PI) * 0.8;
+                sat.trail.material.opacity = (1 - sat.progress) * 0.6;
+                sat.mesh.material.opacity = 0.95 - (sat.progress * 0.05);
+              }
+            } else {
+              sat.mesh.material.opacity = 0;
+              sat.trail.material.opacity = 0;
+              sat.line.material.opacity = 0;
             }
           });
           
@@ -535,37 +590,37 @@ export default function AWSGlobe({ awsStats }) {
 
   return (
     <div className="relative w-full h-full bg-black overflow-hidden">
-      <div ref={containerRef} className="w-full h-full" style={{ minHeight: '600px' }} />
+      <div ref={containerRef} className="w-full h-full" />
 
-      {/* Stats Overlay */}
-      <div className="absolute top-6 right-6 space-y-3 text-right font-mono z-20">
-        <div className="text-cyan-400 text-sm backdrop-blur-sm bg-black/50 px-3 py-1 rounded">
-          ACTIVE CONNECTIONS: 
-          <span className="text-white font-bold text-lg ml-2">
-            {awsStats?.estimatedRequests ? (awsStats.estimatedRequests / 1000).toFixed(1) + 'K' : '5.2M'}/sec
+      {/* Stats Overlay - Responsive */}
+      <div className="absolute top-2 sm:top-6 right-2 sm:right-6 space-y-1 sm:space-y-3 text-right font-mono z-20">
+        <div className="text-cyan-400 text-[10px] sm:text-sm backdrop-blur-sm bg-black/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded">
+          CONNECTIONS: 
+          <span className="text-white font-bold text-xs sm:text-lg ml-1 sm:ml-2">
+            {awsStats?.estimatedRequests ? (awsStats.estimatedRequests / 1000).toFixed(1) + 'K' : '5.2M'}/s
           </span>
         </div>
-        <div className="text-cyan-400 text-sm backdrop-blur-sm bg-black/50 px-3 py-1 rounded">
-          DATA TRANSFERRED: 
-          <span className="text-white font-bold text-lg ml-2">847 TB/hr</span>
+        <div className="text-cyan-400 text-[10px] sm:text-sm backdrop-blur-sm bg-black/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded">
+          DATA: 
+          <span className="text-white font-bold text-xs sm:text-lg ml-1 sm:ml-2">847 TB/hr</span>
         </div>
-        <div className="text-cyan-400 text-sm backdrop-blur-sm bg-black/50 px-3 py-1 rounded">
-          REGIONS ONLINE: 
-          <span className="text-green-400 font-bold text-lg ml-2">
+        <div className="text-cyan-400 text-[10px] sm:text-sm backdrop-blur-sm bg-black/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded">
+          REGIONS: 
+          <span className="text-green-400 font-bold text-xs sm:text-lg ml-1 sm:ml-2">
             {awsStats?.operationalRegions || 18}/{awsStats?.totalRegions || 18}
           </span>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="absolute bottom-6 left-6 font-mono text-xs z-20">
-        <div className="backdrop-blur-sm bg-black/50 px-3 py-2 rounded space-y-1">
+      {/* Legend - Responsive */}
+      <div className="absolute bottom-2 sm:bottom-6 left-2 sm:left-6 font-mono text-[10px] sm:text-xs z-20">
+        <div className="backdrop-blur-sm bg-black/50 px-2 sm:px-3 py-1 sm:py-2 rounded space-y-0.5 sm:space-y-1">
           <div className="text-cyan-400">
-            <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+            <span className="inline-block w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full mr-1 sm:mr-2"></span>
             AWS REGIONS
           </div>
           <div className="text-cyan-400">
-            <span className="inline-block w-3 h-3 bg-yellow-400 rounded-full mr-2"></span>
+            <span className="inline-block w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full mr-1 sm:mr-2"></span>
             DATA TRANSFER
           </div>
         </div>
