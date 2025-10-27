@@ -75,7 +75,7 @@ jobs:
       - name: Rollout new image
         run: |
           export KUBECONFIG=$PWD/kubeconfig
-          echo "Updating deployment with latest image..."
-          kubectl set image deployment/website-project website-project=ghcr.io/geo96r/website-project:latest --namespace default
-          echo "Waiting for rollout to finish..."
+          echo "Force restarting deployment to pull new image..."
+          kubectl rollout restart deployment website-project --namespace default
           kubectl rollout status deployment/website-project --namespace default --timeout=180s
+
