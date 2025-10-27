@@ -29,17 +29,15 @@ jobs:
           username: geo96r
           password: ${{ secrets.GHCR_TOKEN }}
 
-      # 🏷️ Generate metadata (tags & labels)
+      # Generate metadata 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=main-
 
       # Build and push the Docker image to GHCR
       - name: Build and push Docker image
@@ -59,19 +57,20 @@ jobs:
         with:
           version: 'v1.29.0'
 
-
       # Configure kubeconfig 
       - name: Configure kubeconfig
         run: |
           echo "${{ secrets.KUBECONFIG }}" > kubeconfig
           chmod 600 kubeconfig
           export KUBECONFIG=$PWD/kubeconfig
+          kubectl cluster-info
           kubectl get nodes
 
-      #  Restart deployment after build also pulls the image from packages :)
+      # Roll out new image to le cluster c'est a dire kubernetes
       - name: Rollout new image
         run: |
           export KUBECONFIG=$PWD/kubeconfig
-          kubectl set image deployment/website-project website=ghcr.io/geo96r/website-project:latest --namespace default || true
-          kubectl rollout status deployment/website-project --namespace default --timeout=120s
-
+          echo "Updating deployment with latest image..."
+          kubectl set image deployment/website-project website=ghcr.io/geo96r/website-project:latest --namespace default
+          echo "Waiting for rollout to finish..."
+          kubectl rollout status deployment/website-project --namespace default --timeout=180s
