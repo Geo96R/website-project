@@ -16,16 +16,16 @@ export default function StreamSelector({ onStreamSelect }) {
   ];
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-2 sm:space-y-4">
       {/* Header */}
-      <div className="pb-2 border-b border-tron-cyan/30">
-        <h2 className="text-base text-tron-cyan font-mono">
+      <div className="pb-1 sm:pb-2 border-b border-tron-cyan/30">
+        <h2 className="text-xs sm:text-sm md:text-base text-tron-cyan font-mono break-words">
           DEVOPS CONTROL CENTER ... PLEASE SELECT DATA <span className="text-tron-blue">.STREAM</span>
         </h2>
       </div>
 
-      {/* Stream Grid - Enhanced Tron Style */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Stream Grid - Responsive: 1 column on mobile, 2 on tablet, 3 on desktop */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
         {streams.map((stream, index) => (
           <motion.div
             key={stream.id}
@@ -35,7 +35,7 @@ export default function StreamSelector({ onStreamSelect }) {
             whileHover={stream.active ? { scale: 1.02 } : {}}
             whileTap={stream.active ? { scale: 0.98 } : {}}
             className={`
-              relative p-4 cursor-pointer transition-all duration-300
+              relative p-3 sm:p-4 cursor-pointer transition-all duration-300
               ${hoveredStream === stream.id && stream.active
                 ? 'bg-gradient-to-br from-tron-cyan/15 to-tron-blue/10 border-tron-cyan shadow-lg shadow-tron-cyan/20' 
                 : stream.active
@@ -52,24 +52,24 @@ export default function StreamSelector({ onStreamSelect }) {
             {/* Status Indicator - Top Right */}
             <div className="absolute top-1 right-1 flex items-center space-x-1 z-10">
               <div className={`
-                w-2 h-2 rounded-full animate-pulse shadow-lg transition-all duration-300
+                w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full animate-pulse shadow-lg transition-all duration-300
                 ${stream.active 
                   ? 'bg-green-400 shadow-green-400/50' 
                   : 'bg-red-500 shadow-red-500/50'}
               `} />
               <div className={`
-                text-[8px] font-mono transition-all duration-300
+                text-[7px] sm:text-[8px] font-mono transition-all duration-300
                 ${stream.active ? 'text-green-400' : 'text-red-500'}
               `}>
                 {stream.active ? 'ONLINE' : 'OFFLINE'}
               </div>
             </div>
 
-            {/* Windows-style Folder Icon with TRON aesthetics */}
-            <div className="w-16 h-14 mb-3 mx-auto relative">
+            {/* Windows-style Folder Icon with TRON aesthetics - Responsive sizing */}
+            <div className="w-12 h-10 sm:w-16 sm:h-14 mb-2 sm:mb-3 mx-auto relative">
               {/* Folder Tab */}
               <div className={`
-                absolute top-0 left-0 w-7 h-2 transition-all duration-300
+                absolute top-0 left-0 w-5 h-1.5 sm:w-7 sm:h-2 transition-all duration-300
                 ${hoveredStream === stream.id && stream.active
                   ? 'border-l-2 border-t-2 border-r border-tron-cyan bg-black' 
                   : stream.active
@@ -82,7 +82,7 @@ export default function StreamSelector({ onStreamSelect }) {
               
               {/* Main Folder Body */}
               <div className={`
-                absolute top-1.5 left-0 w-full h-11 transition-all duration-300
+                absolute top-1 sm:top-1.5 left-0 w-full h-8 sm:h-11 transition-all duration-300
                 ${hoveredStream === stream.id && stream.active
                   ? 'bg-black shadow-lg shadow-tron-cyan/30' 
                   : stream.active
@@ -134,7 +134,7 @@ export default function StreamSelector({ onStreamSelect }) {
                 
                 {/* 3-angle rectangle - centered on folder bottom */}
                 <div className={`
-                  absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-3 transition-all duration-300
+                  absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-2 sm:w-8 sm:h-3 transition-all duration-300
                   ${hoveredStream === stream.id && stream.active
                     ? 'bg-tron-cyan/30' 
                     : stream.active
@@ -155,13 +155,13 @@ export default function StreamSelector({ onStreamSelect }) {
             {/* Stream Name */}
             <div className="text-center">
               <div className={`
-                text-xs font-mono font-bold mb-1 transition-all duration-300
+                text-[10px] sm:text-xs font-mono font-bold mb-0.5 sm:mb-1 transition-all duration-300
                 ${stream.active ? 'text-tron-cyan' : 'text-gray-500'}
                 ${hoveredStream === stream.id && stream.active ? 'drop-shadow-[0_0_8px_rgba(0,255,249,0.6)]' : ''}
               `}>
                 {stream.name}
               </div>
-              <div className="text-[10px] text-gray-400 transition-colors duration-300">
+              <div className="text-[8px] sm:text-[10px] text-gray-400 transition-colors duration-300">
                 {stream.subtitle}
               </div>
             </div>
