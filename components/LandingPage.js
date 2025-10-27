@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import StreamSelector from './StreamSelector';
 import TerminalDisplay from './TerminalDisplay';
-import InteractiveKeyboard from './InteractiveKeyboard';
+import KeyboardVisualizer from './KeyboardVisualizer';
 
 // dynamic import to prevent SSR issues
 const AnimatedFrame = dynamic(() => import('./AnimatedFrame'), { ssr: false });
@@ -16,16 +16,20 @@ export default function LandingPage() {
   const [terminalCommand, setTerminalCommand] = useState('');
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [isMobile, setIsMobile] = useState(false);
+  const [showKeyboard, setShowKeyboard] = useState(true);
 
   useEffect(() => {
     // only run on client side
     if (typeof window === 'undefined') return;
     
-    // check if mobile device
+    // check if mobile device and screen size
     const checkMobile = () => {
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const isTablet = /iPad|Android/i.test(navigator.userAgent) && 'ontouchstart' in window;
-      setIsMobile(isMobileDevice || isTablet);
+      const isMobileDevice = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isSmallTablet = /iPad/i.test(navigator.userAgent) && window.innerWidth < 768;
+      const isSmallScreen = window.innerWidth < 768; // Hide keyboard below 768px
+      
+      setIsMobile(isMobileDevice || isSmallTablet || isSmallScreen);
+      setShowKeyboard(!isSmallScreen); // Only show keyboard on screens 768px and wider
     };
     
     checkMobile();
@@ -35,14 +39,21 @@ export default function LandingPage() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       
-      // Mobile landscape optimizations
+      // Responsive sizing
       let contentWidth, contentHeight;
-      if (isMobile && vh < vw) {
-        // Landscape mobile - use more screen space
-        contentWidth = Math.min(vw * 0.95, 1200);
-        contentHeight = Math.min(vh * 0.9, 600);
-      } else {
-        // Desktop or portrait mobile
+      
+      // Mobile devices (portrait)
+      if (vw < 768 && vh > vw) {
+        contentWidth = vw * 0.92;
+        contentHeight = vh * 0.88;
+      }
+      // Mobile devices (landscape) and tablets
+      else if (vw < 1024) {
+        contentWidth = vw * 0.88;
+        contentHeight = vh * 0.85;
+      }
+      // Desktop and larger screens
+      else {
         contentWidth = Math.min(vw * 0.8, 1200);
         contentHeight = Math.min(vh * 0.85, 800);
       }
@@ -54,11 +65,20 @@ export default function LandingPage() {
     };
 
     calculateDimensions();
-    window.addEventListener('resize', calculateDimensions);
-    window.addEventListener('orientationchange', calculateDimensions);
+    window.addEventListener('resize', () => {
+      calculateDimensions();
+      checkMobile(); // Recheck on resize
+    });
+    window.addEventListener('orientationchange', () => {
+      calculateDimensions();
+      checkMobile(); // Recheck on orientation change
+    });
     
     const handleZoom = () => {
-      setTimeout(calculateDimensions, 100);
+      setTimeout(() => {
+        calculateDimensions();
+        checkMobile();
+      }, 100);
     };
     window.addEventListener('wheel', handleZoom);
     window.addEventListener('keydown', (e) => {
@@ -87,9 +107,9 @@ export default function LandingPage() {
     }, 500);
     
     // faster navigation - adjust speed based on device
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-    const typingSpeed = isMobile ? 50 : 250; // slower on PC, faster on mobile
-    const delay = isMobile ? 500 : 1000; // shorter delay on mobile
+    const isMobileDevice = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const typingSpeed = isMobileDevice ? 50 : 250; // slower on PC, faster on mobile
+    const delay = isMobileDevice ? 500 : 1000; // shorter delay on mobile
     
     setTimeout(() => {
       router.push(`/${streamId}`);
@@ -99,7 +119,7 @@ export default function LandingPage() {
   return (
     <>
       <AnimatedFrame />
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-start justify-center pt-2 sm:pt-4 lg:items-center lg:pt-0">
         {/* Synchronized container - same dimensions as border */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -109,27 +129,27 @@ export default function LandingPage() {
           style={{
             width: `${containerDimensions.width}px`,
             height: `${containerDimensions.height}px`,
-            padding: '20px',
+            padding: isMobile ? '8px' : '20px',
           }}
         >
         {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6 h-full">
           
           {/* LEFT COLUMN - README stacked vertically */}
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-4">
             {/* Header */}
             <div className="border-t-2 border-b border-tron-cyan p-2">
               <div className="text-xs text-tron-cyan font-mono">GEORGE DEVOPS PORTAL <span className="text-tron-blue">v2.0</span></div>
             </div>
 
             {/* README Section - Vertical */}
-            <div className="border border-tron-cyan p-4 bg-black/50">
-              <div className="flex items-center justify-between mb-3 pb-2 border-b border-tron-cyan/30">
-                <h2 className="text-lg font-bold text-tron-cyan font-mono">README <span className="text-tron-blue">.TXT</span></h2>
+            <div className="border border-tron-cyan p-3 sm:p-4 bg-black/50">
+              <div className="flex items-center justify-between mb-2 sm:mb-3 pb-2 border-b border-tron-cyan/30">
+                <h2 className="text-base sm:text-lg font-bold text-tron-cyan font-mono">README <span className="text-tron-blue">.TXT</span></h2>
                 <span className="text-[10px] text-tron-blue">END. PROGRAM</span>
               </div>
               
-              <div className="space-y-3 text-xs leading-relaxed">
+              <div className="space-y-2 sm:space-y-3 text-xs leading-relaxed">
                 <p className="text-gray-300">
                   Hello <span className="text-tron-cyan font-semibold">User</span>.
                 </p>
@@ -146,7 +166,7 @@ export default function LandingPage() {
             </div>
 
             {/* System Status */}
-            <div className="border border-tron-blue p-4 bg-black/50">
+            <div className="border border-tron-blue p-3 sm:p-4 bg-black/50">
               <div className="flex items-center justify-between mb-2 pb-2 border-b border-tron-blue/30">
                 <h2 className="text-sm font-bold text-tron-cyan font-mono">SYSTEM <span className="text-tron-blue">.STATUS</span></h2>
               </div>
@@ -171,7 +191,7 @@ export default function LandingPage() {
             </div>
 
             {/* Footer Quote */}
-            <div className="border-t border-tron-blue/30 pt-3">
+            <div className="border-t border-tron-blue/30 pt-2 sm:pt-3">
               <p className="text-[10px] text-gray-600 text-center italic">
                 "Work hard, be kind, and amazing things will happen"
               </p>
@@ -182,7 +202,7 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT COLUMN - Streams and Terminal */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-2 sm:space-y-4">
             {/* Header */}
             <div className="border-t-2 border-b border-tron-cyan p-2">
               <div className="text-xs text-tron-cyan font-mono">
@@ -191,22 +211,24 @@ export default function LandingPage() {
             </div>
 
             {/* Stream Selector */}
-            <div className="border border-tron-cyan/50 p-6 bg-black/50">
+            <div className="border border-tron-cyan/50 p-2 sm:p-4 lg:p-6 bg-black/50">
               <StreamSelector onStreamSelect={handleStreamSelect} />
             </div>
 
             {/* Terminal Display */}
-            <div className="border border-tron-blue/50 p-4 bg-black/50">
+            <div className="border border-tron-blue/50 p-3 sm:p-4 bg-black/50">
               <TerminalDisplay command={terminalCommand} />
             </div>
 
-            {/* Interactive Keyboard - SEPARATE PANEL */}
-            <div className="border border-tron-cyan/50 p-4 bg-black/50">
-              <div className="flex items-center justify-between mb-2 pb-2 border-b border-tron-cyan/30">
-                <h2 className="text-sm font-bold text-tron-cyan font-mono">INTERACTIVE <span className="text-tron-blue">.KEYBOARD</span></h2>
+            {/* Interactive Keyboard - ONLY SHOW ON TABLETS AND DESKTOP (768px+) */}
+            {showKeyboard && (
+              <div className="border border-tron-cyan/50 p-3 sm:p-4 bg-black/50">
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-tron-cyan/30">
+                  <h2 className="text-sm font-bold text-tron-cyan font-mono">KEYBOARD <span className="text-tron-blue">.VISUALIZER</span></h2>
+                </div>
+                <KeyboardVisualizer command={terminalCommand} />
               </div>
-              <InteractiveKeyboard command={terminalCommand} />
-            </div>
+            )}
           </div>
         </div>
         </motion.div>
