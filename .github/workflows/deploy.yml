@@ -74,3 +74,4 @@ jobs:
           export KUBECONFIG=$PWD/kubeconfig
           kubectl set image deployment/website-project website=ghcr.io/geo96r/website-project:latest --namespace default || true
           kubectl rollout status deployment/website-project --namespace default --timeout=120s
+
