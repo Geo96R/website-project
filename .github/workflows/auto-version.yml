@@ -1,0 +1,59 @@
+name: Auto Version Tag
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  autotag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # take all  the curr history for proper version check
+
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+          WITH_V: true  # Creates tags
+          TAG_PREFIX: v
+
+      - name: Update package.json version
+        run: |
+          # Get the latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          VERSION=${LATEST_TAG#v}  # Remove 'v' prefix
+          
+          # Update package.json
+          npm version $VERSION --no-git-tag-version
+          
+          # Commit the version update
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to $LATEST_TAG [skip ci]"
+          git push
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.bump_version.outputs.new_tag }}
+          release_name: Release ${{ steps.bump_version.outputs.new_tag }}
+          body: |
+            ## What's New in ${{ steps.bump_version.outputs.new_tag }}
+            
+            This release includes:
+            - Automated version bumping
+            - DevOps workflow improvements
+            - Mobile UI enhancements
+            
+            ### Changes
+            - See commit history for detailed changes
+          draft: false
+          prerelease: false

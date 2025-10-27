@@ -57,9 +57,11 @@ git branch -d feature/my-feature
 ### Releasing to production(avoid disaster)
 ```bash
 # 1. Create PR: development → main
-# 2. After approval and merge, tag release:
-git tag -a v1.0.0 -m "Release version 1.0.0"
-git push origin v1.0.0
+# 2. After approval and merge, automated versioning will:
+#    - Create git tag (v1.2.3)
+#    - Update package.json version
+#    - Create GitHub release
+#    - Push version changes back to main
 ```
 
 ## 📝 Commit Message Convention
@@ -93,6 +95,27 @@ feat: improve animated frames with retraction on scroll and recreation at bottom
 ### For `development` branch:
 - Require pull request reviews before merging
 - Require status checks to pass before merging
+
+## 🤖 Automated Versioning
+
+The project uses automated versioning via GitHub Actions:
+
+### How It Works
+- **Trigger**: Every push to `main` branch
+- **Action**: Automatically creates git tags (v1.2.3)
+- **Updates**: package.json and package-lock.json versions
+- **Release**: Creates GitHub release with changelog
+
+### Version Bump Types
+- **patch** (1.0.0 → 1.0.1): Bug fixes, small improvements
+- **minor** (1.0.0 → 1.1.0): New features, non-breaking changes  
+- **major** (1.0.0 → 2.0.0): Breaking changes, major rewrites
+
+### Manual Override
+To force a specific version bump, include in commit message:
+- `[major]` - Force major version bump
+- `[minor]` - Force minor version bump  
+- `[patch]` - Force patch version bump
 
 ## Emergency Hotfixes
 
