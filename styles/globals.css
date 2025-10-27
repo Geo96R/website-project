@@ -169,19 +169,6 @@
   }
 }
 
-/* Mobile Portrait - Hide content when orientation prompt is shown */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-  .mobile-portrait-hidden {
-    display: none;
-  }
-  
-  /* Hide border animation when mobile prompt is shown */
-  .portal-frame,
-  .animated-frame {
-    display: none !important;
-  }
-}
-
 /* Mobile-specific fixes for AWS/Google pages */
 @media screen and (max-width: 768px) {
   /* Fix fullscreen pages on mobile */

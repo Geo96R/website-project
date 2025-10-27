@@ -24,7 +24,7 @@ i will try keep it updated as much as possible wether it is new docker/k8s versi
 - Interactive terminal with typing effects
 - Real-time data from AWS, Google Cloud, Radio APIs
 - 3D visualizations using Three.js and amCharts
-- Mobile responsive with orientation prompts
+- Mobile responsive design
 - Docker + Kubernetes deployment ready
 
 ## Tech Stack
