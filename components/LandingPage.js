@@ -119,13 +119,13 @@ export default function LandingPage() {
   return (
     <>
       <AnimatedFrame />
-      <div className="min-h-screen flex items-start justify-center pt-2 sm:pt-4 lg:items-center lg:pt-0">
-        {/* Synchronized container - same dimensions as border */}
+      <div className="min-h-screen flex items-start justify-center pt-2 sm:pt-4 lg:items-center lg:pt-0 overflow-y-auto">
+        {/* Synchronized container - same dimensions as border, auto-height on mobile */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.6, duration: 0.6 }}
-          className="relative"
+          className="relative mb-4"
           style={{
             width: `${containerDimensions.width}px`,
             minHeight: isMobile ? 'auto' : `${containerDimensions.height}px`,
