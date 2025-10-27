@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import InteractiveKeyboard from './InteractiveKeyboard';
+import KeyboardVisualizer from './KeyboardVisualizer';
 
 export default function TerminalDisplay({ command }) {
   const [displayedCommand, setDisplayedCommand] = useState('');

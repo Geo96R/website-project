@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export default function InteractiveKeyboard({ command }) {
+export default function KeyboardVisualizer({ command }) {
   const [highlightedKey, setHighlightedKey] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
