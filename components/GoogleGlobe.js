@@ -32,7 +32,10 @@ export default function GoogleGlobe({ googleStats }) {
           root._logo.dispose();
         }
 
-        // Create map chart - FIXED positioning and zoom disabled
+        // Create map chart - FIXED positioning and zoom disabled, responsive scale
+        const isMobileView = containerRef.current.clientWidth < 768;
+        const globeScale = isMobileView ? 0.65 : 0.88; // Even smaller on mobile to fit completely
+        
         chart = root.container.children.push(
           am5map.MapChart.new(root, {
             projection: am5map.geoOrthographic(),
@@ -45,7 +48,7 @@ export default function GoogleGlobe({ googleStats }) {
             pinchZoom: false, // DISABLE PINCH ZOOM
             maxZoomLevel: 1, // LOCK ZOOM
             minZoomLevel: 1, // LOCK ZOOM
-            scale: 0.88, // 10% larger than 0.8
+            scale: globeScale,
             centerX: am5.percent(50),
             centerY: am5.percent(50),
             x: am5.percent(50),
@@ -67,9 +70,9 @@ export default function GoogleGlobe({ googleStats }) {
           })
         );
 
-        // Style countries - Google Cloud blue
+        // Style countries - TRON blue
         polygonSeries.mapPolygons.template.setAll({
-          fill: am5.color(0x4285f4), // Google blue
+          fill: am5.color(0x0099ff),
           stroke: am5.color(0x000000),
           strokeWidth: 0.5,
           tooltipText: "{name}",
@@ -77,7 +80,7 @@ export default function GoogleGlobe({ googleStats }) {
 
         // Hover state
         polygonSeries.mapPolygons.template.states.create("hover", {
-          fill: am5.color(0x34a853), // Google green
+          fill: am5.color(0x00fff9),
         });
 
         // Graticule (grid lines)
@@ -85,7 +88,7 @@ export default function GoogleGlobe({ googleStats }) {
           step: 15
         }));
         graticuleSeries.mapLines.template.setAll({
-          stroke: am5.color(0x34a853), // Google green
+          stroke: am5.color(0x00fff9),
           strokeOpacity: 0.1,
           strokeWidth: 0.5,
         });
@@ -104,37 +107,32 @@ export default function GoogleGlobe({ googleStats }) {
         });
 
         // Google Cloud Regions - simplified labels
-        const googleRegions = [
+        const awsRegions = [
           // US Regions
-          { lat: 37.7749, lon: -122.4194, name: "us-central1", label: "Iowa" },
-          { lat: 40.7128, lon: -74.0060, name: "us-east1", label: "South Carolina" },
-          { lat: 25.7617, lon: -80.1918, name: "us-east4", label: "Virginia" },
-          { lat: 34.0522, lon: -118.2437, name: "us-west1", label: "Oregon" },
-          { lat: 45.5152, lon: -122.6784, name: "us-west2", label: "Los Angeles" },
-          { lat: 25.7617, lon: -80.1918, name: "us-west3", label: "Salt Lake City" },
-          { lat: 33.4484, lon: -112.0740, name: "us-west4", label: "Las Vegas" },
+          { lat: 39.0458, lon: -77.6413, name: "us-east-1", label: "Virginia" },
+          { lat: 40.0150, lon: -83.0114, name: "us-east-2", label: "Ohio" },
+          { lat: 37.3541, lon: -121.9552, name: "us-west-1", label: "N.California" },
+          { lat: 45.5152, lon: -122.6784, name: "us-west-2", label: "Oregon" },
+          // Canada
+          { lat: 45.5017, lon: -73.5673, name: "ca-central-1", label: "Montreal" },
           // Europe
-          { lat: 50.1109, lon: 8.6821, name: "europe-west1", label: "Belgium" },
-          { lat: 51.5074, lon: -0.1278, name: "europe-west2", label: "London" },
-          { lat: 52.5200, lon: 13.4050, name: "europe-west3", label: "Frankfurt" },
-          { lat: 48.8566, lon: 2.3522, name: "europe-west4", label: "Netherlands" },
-          { lat: 41.9028, lon: 12.4964, name: "europe-west6", label: "Zurich" },
-          { lat: 60.1699, lon: 24.9384, name: "europe-west8", label: "Milan" },
-          { lat: 59.3293, lon: 18.0686, name: "europe-west9", label: "Paris" },
-          { lat: 55.7558, lon: 37.6173, name: "europe-west10", label: "Warsaw" },
-          { lat: 50.1109, lon: 8.6821, name: "europe-north1", label: "Finland" },
+          { lat: 53.3498, lon: -6.2603, name: "eu-west-1", label: "Ireland" },
+          { lat: 51.5074, lon: -0.1278, name: "eu-west-2", label: "London" },
+          { lat: 48.8566, lon: 2.3522, name: "eu-west-3", label: "Paris" },
+          { lat: 50.1109, lon: 8.6821, name: "eu-central-1", label: "Frankfurt" },
+          { lat: 59.3293, lon: 18.0686, name: "eu-north-1", label: "Stockholm" },
           // Asia Pacific
-          { lat: 35.6762, lon: 139.6503, name: "asia-northeast1", label: "Tokyo" },
-          { lat: 37.5665, lon: 126.9780, name: "asia-northeast2", label: "Osaka" },
-          { lat: 1.3521, lon: 103.8198, name: "asia-southeast1", label: "Singapore" },
-          { lat: -33.8688, lon: 151.2093, name: "asia-southeast2", label: "Sydney" },
-          { lat: 19.0760, lon: 72.8777, name: "asia-south1", label: "Mumbai" },
-          { lat: 22.3193, lon: 114.1694, name: "asia-east1", label: "Hong Kong" },
-          { lat: 25.0330, lon: 121.5654, name: "asia-east2", label: "Taiwan" },
-          // Other regions
-          { lat: -23.5505, lon: -46.6333, name: "southamerica-east1", label: "São Paulo" },
-          { lat: 26.0667, lon: 50.5577, name: "me-west1", label: "Tel Aviv" },
-          { lat: -33.9249, lon: 18.4241, name: "africa-south1", label: "Johannesburg" },
+          { lat: 35.6762, lon: 139.6503, name: "ap-northeast-1", label: "Tokyo" },
+          { lat: 37.5665, lon: 126.9780, name: "ap-northeast-2", label: "Seoul" },
+          { lat: 1.3521, lon: 103.8198, name: "ap-southeast-1", label: "Singapore" },
+          { lat: -33.8688, lon: 151.2093, name: "ap-southeast-2", label: "Sydney" },
+          { lat: 19.0760, lon: 72.8777, name: "ap-south-1", label: "Mumbai" },
+          // Middle East
+          { lat: 26.0667, lon: 50.5577, name: "me-south-1", label: "Bahrain" },
+          // South America
+          { lat: -23.5505, lon: -46.6333, name: "sa-east-1", label: "São Paulo" },
+          // Africa
+          { lat: -33.9249, lon: 18.4241, name: "af-south-1", label: "Cape Town" },
         ];
 
         // Create point series for Google Cloud regions
@@ -143,7 +141,7 @@ export default function GoogleGlobe({ googleStats }) {
         );
 
         // Google Cloud region markers with better labels
-        googleRegions.forEach((region) => {
+        awsRegions.forEach((region) => {
           pointSeries.data.push({
             geometry: { type: "Point", coordinates: [region.lon, region.lat] },
             title: region.label,
@@ -151,15 +149,15 @@ export default function GoogleGlobe({ googleStats }) {
           });
         });
 
-        // Style Google Cloud markers - Google colors
+        // Style Google Cloud markers - simpler, more readable
         pointSeries.bullets.push(function(root, series, dataItem) {
           const container = am5.Container.new(root, {});
           
-          // Google blue dot
+          // Red dot
           const circle = am5.Circle.new(root, {
             radius: 5,
-            fill: am5.color(0x4285f4), // Google blue
-            stroke: am5.color(0x34a853), // Google green
+            fill: am5.color(0xff0044),
+            stroke: am5.color(0xff6688),
             strokeWidth: 2,
             strokeOpacity: 0.5,
           });
@@ -204,23 +202,64 @@ export default function GoogleGlobe({ googleStats }) {
           });
         });
 
-        // City locations for satellite paths
+        // Realistic data traffic routes between major data centers through continents
+        const trafficRoutes = [
+          // Trans-Atlantic (US <-> Europe)
+          { from: { lat: 40.7128, lon: -74.0060, name: "New York" }, to: { lat: 51.5074, lon: -0.1278, name: "London" } },
+          { from: { lat: 37.7749, lon: -122.4194, name: "San Francisco" }, to: { lat: 48.8566, lon: 2.3522, name: "Paris" } },
+          
+          // Trans-Pacific (routing through northern route)
+          { from: { lat: 37.7749, lon: -122.4194, name: "San Francisco" }, to: { lat: 35.6762, lon: 139.6503, name: "Tokyo" } },
+          { from: { lat: 47.6062, lon: -122.3321, name: "Seattle" }, to: { lat: 64.2008, lon: -149.4937, name: "Alaska" } }, // Through Alaska
+          
+          // Europe <-> Asia
+          { from: { lat: 50.1109, lon: 8.6821, name: "Frankfurt" }, to: { lat: 55.7558, lon: 37.6173, name: "Moscow" } },
+          { from: { lat: 51.5074, lon: -0.1278, name: "London" }, to: { lat: 25.2048, lon: 55.2708, name: "Dubai" } },
+          { from: { lat: 55.7558, lon: 37.6173, name: "Moscow" }, to: { lat: 39.9042, lon: 116.4074, name: "Beijing" } },
+          
+          // Asia Internal  
+          { from: { lat: 39.9042, lon: 116.4074, name: "Beijing" }, to: { lat: 35.6762, lon: 139.6503, name: "Tokyo" } },
+          { from: { lat: 35.6762, lon: 139.6503, name: "Tokyo" }, to: { lat: 37.5665, lon: 126.9780, name: "Seoul" } },
+          { from: { lat: 1.3521, lon: 103.8198, name: "Singapore" }, to: { lat: -6.2088, lon: 106.8456, name: "Jakarta" } }, // Singapore to Jakarta
+          { from: { lat: 25.2048, lon: 55.2708, name: "Dubai" }, to: { lat: 19.0760, lon: 72.8777, name: "Mumbai" } },
+          
+          // Americas
+          { from: { lat: 40.7128, lon: -74.0060, name: "New York" }, to: { lat: -23.5505, lon: -46.6333, name: "São Paulo" } },
+          { from: { lat: 19.4326, lon: -99.1332, name: "Mexico City" }, to: { lat: -23.5505, lon: -46.6333, name: "São Paulo" } },
+          { from: { lat: 40.7128, lon: -74.0060, name: "New York" }, to: { lat: 45.5017, lon: -73.5673, name: "Montreal" } },
+          
+          // Africa-Middle East
+          { from: { lat: -26.2041, lon: 28.0473, name: "Johannesburg" }, to: { lat: 30.0444, lon: 31.2357, name: "Cairo" } },
+          { from: { lat: 30.0444, lon: 31.2357, name: "Cairo" }, to: { lat: 25.2048, lon: 55.2708, name: "Dubai" } },
+        ];
+
+        // Track active satellites - limit to 7-8 total
+        let activeSatelliteCount = 0;
+        const MAX_SATELLITES = 8;
+        
+        // City locations kept for reference
         const cityLocations = [
           { lat: 40.7128, lon: -74.0060, name: "New York" },
           { lat: 51.5074, lon: -0.1278, name: "London" },
           { lat: 35.6762, lon: 139.6503, name: "Tokyo" },
-          { lat: 1.3521, lon: 103.8198, name: "Singapore" },
-          { lat: -33.8688, lon: 151.2093, name: "Sydney" },
-          { lat: 37.7749, lon: -122.4194, name: "San Francisco" },
           { lat: 48.8566, lon: 2.3522, name: "Paris" },
-          { lat: 52.5200, lon: 13.4050, name: "Berlin" },
+          { lat: -33.8688, lon: 151.2093, name: "Sydney" },
+          { lat: 1.3521, lon: 103.8198, name: "Singapore" },
+          { lat: 37.7749, lon: -122.4194, name: "San Francisco" },
+          { lat: -23.5505, lon: -46.6333, name: "São Paulo" },
+          { lat: 55.7558, lon: 37.6173, name: "Moscow" },
+          { lat: 39.9042, lon: 116.4074, name: "Beijing" },
           { lat: 19.0760, lon: 72.8777, name: "Mumbai" },
-          { lat: 22.3193, lon: 114.1694, name: "Hong Kong" },
+          { lat: 25.2048, lon: 55.2708, name: "Dubai" },
+          { lat: -26.2041, lon: 28.0473, name: "Johannesburg" },
+          { lat: 30.0444, lon: 31.2357, name: "Cairo" },
+          { lat: 52.5200, lon: 13.4050, name: "Berlin" },
+          { lat: 43.6532, lon: -79.3832, name: "Toronto" },
         ];
 
-        // Auto-rotate the globe with proper interaction handling
+        // SLOWER, SMOOTHER ROTATION
         let isInteracting = false;
-        let rotationSpeed = 0.2;
+        let rotationSpeed = 0.2; // Much slower rotation
         
         // Start rotation animation
         const startRotation = () => {
@@ -232,14 +271,11 @@ export default function GoogleGlobe({ googleStats }) {
             key: "rotationX",
             from: chart.get("rotationX"),
             to: chart.get("rotationX") + 36000,
-            duration: 10000000,
+            duration: 10000000, // Much slower
             loops: Infinity,
-            easing: am5.ease.linear
+            easing: am5.ease.linear,
           });
         };
-
-        // Start initial rotation
-        startRotation();
 
         // Handle interaction
         chart.chartContainer.events.on("pointerdown", () => {
@@ -251,14 +287,18 @@ export default function GoogleGlobe({ googleStats }) {
 
         chart.chartContainer.events.on("globalpointerup", () => {
           isInteracting = false;
+          // Resume rotation immediately
           setTimeout(() => {
             if (!isInteracting) {
               startRotation();
             }
-          }, 2000);
+          }, 50);
         });
 
-        // ===== ADD STARS (Three.js background layer) =====
+        // Start initial rotation
+        startRotation();
+
+        // ===== THREE.JS STARS BACKGROUND =====
         const starsCanvas = document.createElement('canvas');
         starsCanvas.style.position = 'absolute';
         starsCanvas.style.top = '0';
@@ -266,8 +306,9 @@ export default function GoogleGlobe({ googleStats }) {
         starsCanvas.style.width = '100%';
         starsCanvas.style.height = '100%';
         starsCanvas.style.pointerEvents = 'none';
-        starsCanvas.style.zIndex = '0'; // Behind amCharts globe
-        containerRef.current.appendChild(starsCanvas);
+        starsCanvas.style.zIndex = '0';
+        containerRef.current.style.position = 'relative';
+        containerRef.current.insertBefore(starsCanvas, containerRef.current.firstChild);
 
         const starsRenderer = new THREE.WebGLRenderer({ 
           canvas: starsCanvas,
@@ -275,7 +316,6 @@ export default function GoogleGlobe({ googleStats }) {
           antialias: true 
         });
         starsRenderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-        starsRenderer.setClearColor(0x000000, 0);
 
         starsScene = new THREE.Scene();
         const starsCamera = new THREE.PerspectiveCamera(
@@ -284,66 +324,44 @@ export default function GoogleGlobe({ googleStats }) {
           0.1,
           1000
         );
-        starsCamera.position.z = 2.8;
+        starsCamera.position.z = 3;
 
-        // Particle field (stars)
+        // Create stars
         const starsGeometry = new THREE.BufferGeometry();
-        const starCount = 3000; // MORE stars
+        const starCount = 1500;
         const starPositions = new Float32Array(starCount * 3);
         const starColors = new Float32Array(starCount * 3);
 
-        for (let i = 0; i < starCount * 3; i += 3) {
-          const radius = 1.5 + Math.random() * 3; // Wider spread
+        for (let i = 0; i < starCount; i++) {
+          const radius = 4 + Math.random() * 10;
           const theta = Math.random() * Math.PI * 2;
           const phi = Math.acos(2 * Math.random() - 1);
           
-          starPositions[i] = radius * Math.sin(phi) * Math.cos(theta);
-          starPositions[i + 1] = radius * Math.sin(phi) * Math.sin(theta);
-          starPositions[i + 2] = radius * Math.cos(phi);
+          starPositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+          starPositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+          starPositions[i * 3 + 2] = radius * Math.cos(phi);
           
-          // Mix of Google colors
-          const colorChoice = Math.random();
-          if (colorChoice > 0.7) {
-            starColors[i] = 0.26; // Google blue
-            starColors[i + 1] = 0.52;
-            starColors[i + 2] = 0.96;
-          } else {
-            starColors[i] = 0.20; // Google green
-            starColors[i + 1] = 0.66;
-            starColors[i + 2] = 0.33;
-          }
+          const brightness = 0.5 + Math.random() * 0.5;
+          starColors[i * 3] = brightness * 0.8;
+          starColors[i * 3 + 1] = brightness * 0.9;
+          starColors[i * 3 + 2] = brightness;
         }
 
         starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
         starsGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
         
-        // Create circular star texture
-        const canvas = document.createElement('canvas');
-        canvas.width = 32;
-        canvas.height = 32;
-        const ctx = canvas.getContext('2d');
-        const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-        gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
-        gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 32, 32);
-        const starTexture = new THREE.CanvasTexture(canvas);
-        
         const starsMaterial = new THREE.PointsMaterial({
-          size: 0.02,
-          map: starTexture,
+          size: 0.015,
+          vertexColors: true,
           transparent: true,
           opacity: 0.8,
-          vertexColors: true,
           blending: THREE.AdditiveBlending,
-          depthWrite: false,
         });
+        
         const stars = new THREE.Points(starsGeometry, starsMaterial);
         starsScene.add(stars);
 
-        // ===== ADD SATELLITES (Three.js overlay layer) =====
+        // ===== THREE.JS SATELLITES - PROPERLY SYNCED =====
         const satellitesCanvas = document.createElement('canvas');
         satellitesCanvas.style.position = 'absolute';
         satellitesCanvas.style.top = '0';
@@ -360,7 +378,6 @@ export default function GoogleGlobe({ googleStats }) {
           antialias: true 
         });
         satellitesRenderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-        satellitesRenderer.setClearColor(0x000000, 0);
 
         satellitesScene = new THREE.Scene();
         const satellitesCamera = new THREE.PerspectiveCamera(
@@ -369,20 +386,21 @@ export default function GoogleGlobe({ googleStats }) {
           0.1,
           1000
         );
-        satellitesCamera.position.z = 2.8;
+        satellitesCamera.position.z = 3; // Match the globe distance
 
-        // Create a group to hold all satellites so we can rotate them with the globe
+        // Satellites group that rotates with globe
         const satellitesGroup = new THREE.Group();
         satellitesScene.add(satellitesGroup);
 
         let satellites = [];
-        let lastRotationX = chart.get("rotationX") || 0;
-        let lastRotationY = chart.get("rotationY") || 0;
 
-        // Helper function to convert lat/lon to 3D position (matching amCharts projection)
-        const latLonToVector3 = (lat, lon, radius = 1.0) => {
+        // FIXED: Better lat/lon to 3D conversion matching globe scale
+        // This converts lat/lon to 3D coordinates that rotate WITH the globe
+        const latLonToVector3 = (lat, lon, radius = 1.05, rotationOffset = 0) => {
+          // Adjusted to match the globe's visual size
           const phi = (90 - lat) * (Math.PI / 180);
-          const theta = (lon + 180) * (Math.PI / 180);
+          // Apply rotation offset to longitude to keep satellites fixed to globe surface
+          const theta = (lon + 180 + rotationOffset) * (Math.PI / 180);
           
           return new THREE.Vector3(
             -(radius * Math.sin(phi) * Math.cos(theta)),
@@ -391,61 +409,59 @@ export default function GoogleGlobe({ googleStats }) {
           );
         };
 
+        // Create satellite function - SIMPLE APPROACH
         const createSatellite = () => {
-          // Pick two different random cities
-          const from = cityLocations[Math.floor(Math.random() * cityLocations.length)];
-          let to = cityLocations[Math.floor(Math.random() * cityLocations.length)];
-          
-          // Make sure they're different
-          let attempts = 0;
-          while (to === from && attempts < 10) {
-            to = cityLocations[Math.floor(Math.random() * cityLocations.length)];
-            attempts++;
+          if (activeSatelliteCount >= MAX_SATELLITES) {
+            return;
           }
+          
+          const route = trafficRoutes[Math.floor(Math.random() * trafficRoutes.length)];
+          
+          // Calculate positions WITHOUT rotation offset - positions are fixed in world space
+          const fromPos = latLonToVector3(route.from.lat, route.from.lon, 1.08, 0);
+          const toPos = latLonToVector3(route.to.lat, route.to.lon, 1.08, 0);
 
-          // Convert to 3D positions using the correct projection
-          const fromPos = latLonToVector3(from.lat, from.lon, 1.02);
-          const toPos = latLonToVector3(to.lat, to.lon, 1.02);
-
-          // Create arc midpoint with proper height
+          // Create arc
           const midPoint = new THREE.Vector3().addVectors(fromPos, toPos).multiplyScalar(0.5);
           const distance = fromPos.distanceTo(toPos);
-          const arcHeight = 0.2 + distance * 0.15; // Lower arcs
-          midPoint.normalize().multiplyScalar(1 + arcHeight);
+          const arcHeight = Math.min(0.3, 0.1 + distance * 0.08);
+          midPoint.normalize().multiplyScalar(1.08 + arcHeight);
 
-          // Create curved path
           const curve = new THREE.QuadraticBezierCurve3(fromPos, midPoint, toPos);
-          const points = curve.getPoints(60);
+          const points = curve.getPoints(50); // More points for smoother line
           
-          // Arc line - Google colors
+          // Path line
           const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
           const lineMaterial = new THREE.LineBasicMaterial({
-            color: 0x34a853, // Google green
+            color: 0x00ffff,
             transparent: true,
-            opacity: 0.25,
+            opacity: 0.8,
+            linewidth: 3,
           });
           const line = new THREE.Line(lineGeometry, lineMaterial);
           satellitesGroup.add(line);
 
-          // Satellite (moving dot) - Google colors
-          const satGeometry = new THREE.SphereGeometry(0.008, 8, 8);
+          // Satellite dot
+          const satGeometry = new THREE.SphereGeometry(0.01, 8, 8);
           const satMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0x4285f4, // Google blue
+            color: 0xffcc00,
             transparent: true,
             opacity: 0.95,
           });
           const satellite = new THREE.Mesh(satGeometry, satMaterial);
           satellitesGroup.add(satellite);
 
-          // Trail - Google colors
-          const trailGeometry = new THREE.SphereGeometry(0.014, 8, 8);
+          // Trail
+          const trailGeometry = new THREE.SphereGeometry(0.015, 8, 8);
           const trailMaterial = new THREE.MeshBasicMaterial({
-            color: 0x4285f4, // Google blue
+            color: 0xffcc00,
             transparent: true,
-            opacity: 0.35,
+            opacity: 0.6,
           });
           const trail = new THREE.Mesh(trailGeometry, trailMaterial);
           satellitesGroup.add(trail);
+
+          activeSatelliteCount++;
 
           satellites.push({
             mesh: satellite,
@@ -453,63 +469,88 @@ export default function GoogleGlobe({ googleStats }) {
             line: line,
             curve: curve,
             progress: 0,
-            speed: 0.004 + Math.random() * 0.003,
+            speed: 0.0015 + Math.random() * 0.002,
           });
 
-          // Remove after completion
           setTimeout(() => {
             satellitesGroup.remove(line);
             satellitesGroup.remove(satellite);
             satellitesGroup.remove(trail);
             satellites = satellites.filter(s => s.mesh !== satellite);
-          }, 15000);
+            activeSatelliteCount--;
+          }, 35000);
         };
 
-        // Create satellites periodically - more frequent
-        setInterval(createSatellite, 2000);
-        for (let i = 0; i < 12; i++) {
-          setTimeout(createSatellite, i * 300);
+        // Create initial satellites - start with 3-4
+        const initialCount = 3 + Math.floor(Math.random() * 2); // 3 or 4
+        for (let i = 0; i < initialCount; i++) {
+          setTimeout(() => createSatellite(), i * 1000);
         }
+        
+        // Keep creating new satellites with alternating pattern
+        // Create bursts of 1-2 satellites every 4-6 seconds
+        setInterval(() => {
+          const burstSize = 1 + Math.floor(Math.random() * 2); // 1 or 2
+          for (let i = 0; i < burstSize; i++) {
+            setTimeout(() => createSatellite(), i * 800);
+          }
+        }, 4000 + Math.random() * 2000); // 4-6 seconds between bursts
 
-        // Animation loop for stars and satellites
+        // FIXED SYNC: Track rotation properly
+        let lastFrameTime = Date.now();
+        
+        // Animation loop with proper sync
         const animate = () => {
           requestAnimationFrame(animate);
+          
+          const currentTime = Date.now();
+          const deltaTime = (currentTime - lastFrameTime) / 1000;
+          lastFrameTime = currentTime;
           
           // Rotate stars slowly
           stars.rotation.y += 0.0002;
           stars.rotation.x += 0.0001;
           
-          // Sync satellite rotation with globe rotation
+          // Sync satellitesGroup with globe rotation
           const currentRotationX = chart.get("rotationX") || 0;
           const currentRotationY = chart.get("rotationY") || 0;
+          satellitesGroup.rotation.y = (currentRotationX * Math.PI) / 180;
+          satellitesGroup.rotation.x = -(currentRotationY * Math.PI) / 180;
           
-          // Apply rotation delta to satellites group
-          const deltaX = (currentRotationX - lastRotationX) * (Math.PI / 180);
-          const deltaY = (currentRotationY - lastRotationY) * (Math.PI / 180);
-          
-          satellitesGroup.rotation.y += deltaX;
-          satellitesGroup.rotation.x -= deltaY;
-          
-          lastRotationX = currentRotationX;
-          lastRotationY = currentRotationY;
-          
-          // Update satellites
+          // Animate satellites along their paths - SIMPLE
           satellites.forEach(sat => {
             sat.progress += sat.speed;
-            if (sat.progress <= 1) {
+            
+            if (sat.progress <= 0.98) {
               const pos = sat.curve.getPoint(sat.progress);
               sat.mesh.position.copy(pos);
               sat.trail.position.copy(pos);
-              sat.trail.material.opacity = (1 - sat.progress) * 0.4;
+              
+              // Fade effects
+              if (sat.progress > 0.9) {
+                const fadeOutProgress = (sat.progress - 0.9) / 0.08;
+                sat.line.material.opacity = Math.sin(sat.progress * Math.PI) * 0.8 * (1 - fadeOutProgress);
+                sat.trail.material.opacity = (1 - sat.progress) * 0.6 * (1 - fadeOutProgress);
+                sat.mesh.material.opacity = (0.95 - (sat.progress * 0.1)) * (1 - fadeOutProgress);
+              } else {
+                sat.line.material.opacity = Math.sin(sat.progress * Math.PI) * 0.8;
+                sat.trail.material.opacity = (1 - sat.progress) * 0.6;
+                sat.mesh.material.opacity = 0.95 - (sat.progress * 0.05);
+              }
+            } else {
+              sat.mesh.material.opacity = 0;
+              sat.trail.material.opacity = 0;
+              sat.line.material.opacity = 0;
             }
           });
           
           starsRenderer.render(starsScene, starsCamera);
           satellitesRenderer.render(satellitesScene, satellitesCamera);
         };
+        
         animate();
 
-        // Handle resize
+        // Handle window resize
         const handleResize = () => {
           if (!containerRef.current) return;
           const width = containerRef.current.clientWidth;
@@ -523,14 +564,18 @@ export default function GoogleGlobe({ googleStats }) {
           satellitesCamera.updateProjectionMatrix();
           satellitesRenderer.setSize(width, height);
         };
+        
         window.addEventListener('resize', handleResize);
 
         return () => {
           window.removeEventListener('resize', handleResize);
+          if (rotationAnimation) {
+            rotationAnimation.stop();
+          }
         };
 
       } catch (error) {
-        console.error('Error initializing Google Cloud globe:', error);
+        console.error('Error initializing globe:', error);
       }
     };
 
@@ -544,19 +589,40 @@ export default function GoogleGlobe({ googleStats }) {
   }, []);
 
   return (
-    <div className="relative w-full h-full bg-black">
+    <div className="relative w-full h-full bg-black overflow-hidden">
       <div ref={containerRef} className="w-full h-full" />
 
-      {/* Stats Overlay */}
-      <div className="absolute top-6 right-6 space-y-3 text-right font-mono">
-        <div className="text-tron-cyan text-sm">
-          ACTIVE CONNECTIONS: <span className="text-white font-bold text-lg">{googleStats?.estimatedRequests ? (googleStats.estimatedRequests / 1000).toFixed(1) + 'K' : '3.8M'}/sec</span>
+      {/* Stats Overlay - Responsive */}
+      <div className="absolute top-2 sm:top-6 right-2 sm:right-6 space-y-1 sm:space-y-3 text-right font-mono z-20">
+        <div className="text-cyan-400 text-[10px] sm:text-sm backdrop-blur-sm bg-black/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded">
+          CONNECTIONS: 
+          <span className="text-white font-bold text-xs sm:text-lg ml-1 sm:ml-2">
+            {googleStats?.estimatedRequests ? (googleStats.estimatedRequests / 1000).toFixed(1) + 'K' : '5.2M'}/s
+          </span>
         </div>
-        <div className="text-tron-cyan text-sm">
-          DATA TRANSFERRED: <span className="text-white font-bold text-lg">624 TB/hr</span>
+        <div className="text-cyan-400 text-[10px] sm:text-sm backdrop-blur-sm bg-black/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded">
+          DATA: 
+          <span className="text-white font-bold text-xs sm:text-lg ml-1 sm:ml-2">847 TB/hr</span>
         </div>
-        <div className="text-tron-cyan text-sm">
-          REGIONS ONLINE: <span className="text-white font-bold text-lg">{googleStats?.operationalRegions || 35}/{googleStats?.totalRegions || 35}</span>
+        <div className="text-cyan-400 text-[10px] sm:text-sm backdrop-blur-sm bg-black/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded">
+          REGIONS: 
+          <span className="text-green-400 font-bold text-xs sm:text-lg ml-1 sm:ml-2">
+            {googleStats?.operationalRegions || 18}/{googleStats?.totalRegions || 18}
+          </span>
+        </div>
+      </div>
+
+      {/* Legend - Responsive */}
+      <div className="absolute bottom-2 sm:bottom-6 left-2 sm:left-6 font-mono text-[10px] sm:text-xs z-20">
+        <div className="backdrop-blur-sm bg-black/50 px-2 sm:px-3 py-1 sm:py-2 rounded space-y-0.5 sm:space-y-1">
+          <div className="text-cyan-400">
+            <span className="inline-block w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full mr-1 sm:mr-2"></span>
+            Google Cloud REGIONS
+          </div>
+          <div className="text-cyan-400">
+            <span className="inline-block w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full mr-1 sm:mr-2"></span>
+            DATA TRANSFER
+          </div>
         </div>
       </div>
     </div>
