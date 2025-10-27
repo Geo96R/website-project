@@ -99,7 +99,7 @@ export default function LandingPage() {
   return (
     <>
       <AnimatedFrame />
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-start justify-center pt-2 sm:pt-4 lg:items-center lg:pt-0">
         {/* Synchronized container - same dimensions as border */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -109,14 +109,14 @@ export default function LandingPage() {
           style={{
             width: `${containerDimensions.width}px`,
             height: `${containerDimensions.height}px`,
-            padding: '20px',
+            padding: isMobile ? '8px' : '20px',
           }}
         >
         {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6 h-full">
           
           {/* LEFT COLUMN - README stacked vertically */}
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-4">
             {/* Header */}
             <div className="border-t-2 border-b border-tron-cyan p-2">
               <div className="text-xs text-tron-cyan font-mono">GEORGE DEVOPS PORTAL <span className="text-tron-blue">v2.0</span></div>
@@ -182,7 +182,7 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT COLUMN - Streams and Terminal */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-2 sm:space-y-4">
             {/* Header */}
             <div className="border-t-2 border-b border-tron-cyan p-2">
               <div className="text-xs text-tron-cyan font-mono">
@@ -191,7 +191,7 @@ export default function LandingPage() {
             </div>
 
             {/* Stream Selector */}
-            <div className="border border-tron-cyan/50 p-6 bg-black/50">
+            <div className="border border-tron-cyan/50 p-2 sm:p-4 lg:p-6 bg-black/50">
               <StreamSelector onStreamSelect={handleStreamSelect} />
             </div>
 
