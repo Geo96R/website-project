@@ -128,12 +128,13 @@ export default function LandingPage() {
           className="relative"
           style={{
             width: `${containerDimensions.width}px`,
-            height: `${containerDimensions.height}px`,
+            minHeight: isMobile ? 'auto' : `${containerDimensions.height}px`,
+            height: isMobile ? 'auto' : `${containerDimensions.height}px`,
             padding: isMobile ? '8px' : '20px',
           }}
         >
         {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
           
           {/* LEFT COLUMN - README stacked vertically */}
           <div className="space-y-2 sm:space-y-4">
