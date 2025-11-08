@@ -13,6 +13,13 @@ export default function TerminalDisplay({ command }) {
       return;
     }
 
+    // Reset displayed command first to ensure animation always happens
+    setDisplayedCommand('');
+    
+    // Detect mobile device for slower typing speed
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const typingSpeed = isMobile ? 100 : 50; // Slower on mobile so users can see it
+
     let currentIndex = 0;
     const typingInterval = setInterval(() => {
       if (currentIndex <= command.length) {
@@ -21,7 +28,7 @@ export default function TerminalDisplay({ command }) {
       } else {
         clearInterval(typingInterval);
       }
-    }, 50); // faster typing
+    }, typingSpeed);
 
     return () => clearInterval(typingInterval);
   }, [command]);

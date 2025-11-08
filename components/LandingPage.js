@@ -106,10 +106,10 @@ export default function LandingPage() {
       }
     }, 500);
     
-    // faster navigation - adjust speed based on device
+    // Navigation timing - adjust speed based on device to match typing animation
     const isMobileDevice = typeof window !== 'undefined' && window.innerWidth <= 768;
-    const typingSpeed = isMobileDevice ? 50 : 250; // slower on PC, faster on mobile
-    const delay = isMobileDevice ? 500 : 1000; // shorter delay on mobile
+    const typingSpeed = isMobileDevice ? 100 : 250; // Match TerminalDisplay typing speed (100ms on mobile, 50ms on PC)
+    const delay = isMobileDevice ? 500 : 1000; // Delay after typing completes
     
     setTimeout(() => {
       router.push(`/${streamId}`);

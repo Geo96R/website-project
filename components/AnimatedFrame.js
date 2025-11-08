@@ -104,7 +104,7 @@ export default function AnimatedFrame() {
 
       setScrollState({
         hideTop: scrollY > topThreshold,
-        hideBottom: scrollY > bottomThreshold, // Triggers immediately
+        hideBottom: false, // Never hide bottom border on scroll - only show at bottom
         scrollY,
         isAtBottom,
         isAtTop,
@@ -180,15 +180,13 @@ export default function AnimatedFrame() {
         frameHeight
       ) : frameHeight);
 
-  // Left and right border heights should extend to actual content height when scrolling
-  const sidesBorderHeight = scrollState.hideBottom ? documentHeight : frameHeight;
+  // Left and right border heights should extend to full document height when scrolling
+  const sidesBorderHeight = scrollState.isAtBottom ? documentHeight : Math.max(documentHeight, frameHeight);
 
-  // Calculate bottom border position (moves to bottom of document when at bottom)
-  const bottomBorderTop = scrollState.isAtBottom ? documentHeight - 2 : frameHeight - 2;
-
-  // Bottom border width animation (retracts from both sides)
-  // Start retracting IMMEDIATELY when hideBottom is true
-  const bottomBorderWidth = scrollState.hideBottom && !scrollState.isAtBottom ? 0 : width;
+  // After intro animation, use simple border system
+  // Bottom border is always at the bottom of the frame, only shows when at bottom of page
+  const bottomBorderTop = documentHeight - 2; // Always at bottom of frame container, no position changes
+  const bottomBorderWidth = showContent ? (scrollState.isAtBottom ? width : 0) : 0; // Simple show/hide after intro
 
   return (
     <>
@@ -217,19 +215,32 @@ export default function AnimatedFrame() {
           }}
         />
 
-        {/* BOTTOM BORDER (Cyan) - Retracts IMMEDIATELY on scroll */}
-        <div
-          className="absolute h-0.5 bg-tron-cyan"
-          style={{
-            filter: 'drop-shadow(0 0 10px #00fff9)',
-            top: `${bottomBorderTop}px`,
-            left: `${(width - bottomBorderWidth) / 2}px`, // Center the retraction
-            width: animationStep === 0 ? '0px' : `${bottomBorderWidth}px`,
-            transition: showContent ? 
-              'width 0.4s ease-out, left 0.4s ease-out, top 0.4s ease-out' : 
-              'width 0.7s ease-out',
-          }}
-        />
+        {/* BOTTOM BORDER (Cyan) - Intro animation, then simple show/hide at bottom */}
+        {!showContent ? (
+          // Intro animation: animate from center
+          <div
+            className="absolute h-0.5 bg-tron-cyan"
+            style={{
+              filter: 'drop-shadow(0 0 10px #00fff9)',
+              top: `${bottomBorderTop}px`,
+              left: '0px',
+              width: animationStep === 0 ? '0px' : `${width}px`,
+              transition: 'width 0.7s ease-out',
+            }}
+          />
+        ) : (
+          // After intro: simple show/hide at bottom, no position animations
+          <div
+            className="absolute h-0.5 bg-tron-cyan"
+            style={{
+              filter: 'drop-shadow(0 0 10px #00fff9)',
+              top: `${bottomBorderTop}px`,
+              left: '0px',
+              width: scrollState.isAtBottom ? `${width}px` : '0px',
+              transition: 'width 0.3s ease-out',
+            }}
+          />
+        )}
 
         {/* RIGHT BORDER (Cyan) - Extends to full document height */}
         <div
@@ -270,19 +281,32 @@ export default function AnimatedFrame() {
           }}
         />
 
-        {/* INNER BORDER BOTTOM (Blue Glow) */}
-        <div
-          className="absolute h-px bg-tron-blue"
-          style={{
-            filter: 'drop-shadow(0 0 5px #0099ff)',
-            top: `${bottomBorderTop - 12}px`,
-            left: `${12 + (width - 24 - (bottomBorderWidth - 24)) / 2}px`,
-            width: animationStep === 0 ? '0px' : `${Math.max(0, bottomBorderWidth - 24)}px`,
-            transition: showContent ? 
-              'width 0.4s ease-out, left 0.4s ease-out, top 0.4s ease-out' : 
-              'width 0.7s ease-out 0.05s',
-          }}
-        />
+        {/* INNER BORDER BOTTOM (Blue Glow) - Intro animation, then simple show/hide at bottom */}
+        {!showContent ? (
+          // Intro animation: animate from center
+          <div
+            className="absolute h-px bg-tron-blue"
+            style={{
+              filter: 'drop-shadow(0 0 5px #0099ff)',
+              top: `${bottomBorderTop - 12}px`,
+              left: '12px',
+              width: animationStep === 0 ? '0px' : `${width - 24}px`,
+              transition: 'width 0.7s ease-out 0.05s',
+            }}
+          />
+        ) : (
+          // After intro: simple show/hide at bottom, no position animations
+          <div
+            className="absolute h-px bg-tron-blue"
+            style={{
+              filter: 'drop-shadow(0 0 5px #0099ff)',
+              top: `${bottomBorderTop - 12}px`,
+              left: '12px',
+              width: scrollState.isAtBottom ? `${width - 24}px` : '0px',
+              transition: 'width 0.3s ease-out',
+            }}
+          />
+        )}
 
         {/* INNER BORDER RIGHT (Blue Glow) */}
         <div
@@ -315,8 +339,8 @@ export default function AnimatedFrame() {
         {[
           { side: 'top-left', top: '0px', left: '0px', delay: '1.05s', hideCondition: scrollState.hideTop && !scrollState.isAtTop },
           { side: 'top-right', top: '0px', right: '0px', delay: '1.1s', hideCondition: scrollState.hideTop && !scrollState.isAtTop },
-          { side: 'bottom-left', bottom: '0px', left: '0px', delay: '1.15s', hideCondition: scrollState.hideBottom && !scrollState.isAtBottom },
-          { side: 'bottom-right', bottom: '0px', right: '0px', delay: '1.2s', hideCondition: scrollState.hideBottom && !scrollState.isAtBottom },
+          { side: 'bottom-left', bottom: '0px', left: '0px', delay: '1.15s', hideCondition: !scrollState.isAtBottom },
+          { side: 'bottom-right', bottom: '0px', right: '0px', delay: '1.2s', hideCondition: !scrollState.isAtBottom },
         ].map((corner, idx) => {
           const shouldShow = animationStep !== 0 && !corner.hideCondition;
           const isBottomCorner = corner.side.includes('bottom');
