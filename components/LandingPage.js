@@ -195,10 +195,10 @@ export default function LandingPage() {
 
             {/* Footer Quote */}
             <div className="border-t border-tron-blue/30 pt-2 sm:pt-3 flex-shrink-0">
-              <p className="text-[10px] text-gray-600 text-center italic">
+              <p className="text-sm sm:text-base text-gray-600 text-center italic">
                 "Work hard, be kind, and amazing things will happen"
               </p>
-              <p className="text-[10px] text-gray-700 text-center mt-1">
+              <p className="text-sm sm:text-base text-gray-700 text-center mt-1">
                 © 2025 George Tatevosov
               </p>
             </div>
