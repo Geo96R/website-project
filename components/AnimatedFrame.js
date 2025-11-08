@@ -7,6 +7,7 @@ export default function AnimatedFrame() {
   const [showContent, setShowContent] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [isClient, setIsClient] = useState(false);
+  const [lockedDocumentHeight, setLockedDocumentHeight] = useState(0); // Lock height after intro
   const [scrollState, setScrollState] = useState({
     hideTop: false,
     hideBottom: false,
@@ -139,6 +140,9 @@ export default function AnimatedFrame() {
     // Animation timers
     const timer1 = setTimeout(() => setAnimationStep(1), 50);
     const timer2 = setTimeout(() => {
+      // Lock document height when intro animation completes
+      const currentHeight = getActualContentHeight();
+      setLockedDocumentHeight(currentHeight);
       setShowContent(true);
       handleScroll(); // Initial scroll check
     }, 1500);
@@ -171,21 +175,23 @@ export default function AnimatedFrame() {
   const width = containerDimensions.width + responsiveBorderOffset * 2;
   const frameHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
 
-  // Use the actual document height from scroll state, or fallback to calculated
-  const documentHeight = scrollState.documentHeight > 0 ? scrollState.documentHeight : 
-    (typeof window !== 'undefined' ? 
-      Math.max(
-        document.documentElement.scrollHeight,
-        document.body.scrollHeight,
-        frameHeight
-      ) : frameHeight);
+  // Use locked document height after intro, otherwise use calculated height
+  const documentHeight = showContent && lockedDocumentHeight > 0 ? lockedDocumentHeight :
+    (scrollState.documentHeight > 0 ? scrollState.documentHeight : 
+      (typeof window !== 'undefined' ? 
+        Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+          frameHeight
+        ) : frameHeight));
 
   // Left and right border heights should extend to full document height when scrolling
   const sidesBorderHeight = scrollState.isAtBottom ? documentHeight : Math.max(documentHeight, frameHeight);
 
   // After intro animation, use simple border system
   // Bottom border is always at the bottom of the frame, only shows when at bottom of page
-  const bottomBorderTop = documentHeight - 2; // Always at bottom of frame container, no position changes
+  // Use bottom: 0 instead of top to prevent position changes during scroll
+  const bottomBorderTop = documentHeight - 2; // For intro animation only
   const bottomBorderWidth = showContent ? (scrollState.isAtBottom ? width : 0) : 0; // Simple show/hide after intro
 
   return (
@@ -229,12 +235,12 @@ export default function AnimatedFrame() {
             }}
           />
         ) : (
-          // After intro: simple show/hide at bottom, no position animations
+          // After intro: simple show/hide at bottom, fixed position using bottom: 0
           <div
             className="absolute h-0.5 bg-tron-cyan"
             style={{
               filter: 'drop-shadow(0 0 10px #00fff9)',
-              top: `${bottomBorderTop}px`,
+              bottom: '0px', // Fixed at bottom, no position changes
               left: '0px',
               width: scrollState.isAtBottom ? `${width}px` : '0px',
               transition: 'width 0.3s ease-out',
@@ -295,12 +301,12 @@ export default function AnimatedFrame() {
             }}
           />
         ) : (
-          // After intro: simple show/hide at bottom, no position animations
+          // After intro: simple show/hide at bottom, fixed position using bottom: 12px
           <div
             className="absolute h-px bg-tron-blue"
             style={{
               filter: 'drop-shadow(0 0 5px #0099ff)',
-              top: `${bottomBorderTop - 12}px`,
+              bottom: '12px', // Fixed at bottom, no position changes
               left: '12px',
               width: scrollState.isAtBottom ? `${width - 24}px` : '0px',
               transition: 'width 0.3s ease-out',
