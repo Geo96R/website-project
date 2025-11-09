@@ -7,7 +7,7 @@ export default function AWSGlobe({ awsStats }) {
 
   useEffect(() => {
     let root, chart;
-    let starsScene, satellitesScene;
+    let starsScene;
     let rotationAnimation;
 
     const initGlobe = async () => {
@@ -202,61 +202,6 @@ export default function AWSGlobe({ awsStats }) {
           });
         });
 
-        // Realistic data traffic routes between major data centers through continents
-        const trafficRoutes = [
-          // Trans-Atlantic (US <-> Europe)
-          { from: { lat: 40.7128, lon: -74.0060, name: "New York" }, to: { lat: 51.5074, lon: -0.1278, name: "London" } },
-          { from: { lat: 37.7749, lon: -122.4194, name: "San Francisco" }, to: { lat: 48.8566, lon: 2.3522, name: "Paris" } },
-          
-          // Trans-Pacific (routing through northern route)
-          { from: { lat: 37.7749, lon: -122.4194, name: "San Francisco" }, to: { lat: 35.6762, lon: 139.6503, name: "Tokyo" } },
-          { from: { lat: 47.6062, lon: -122.3321, name: "Seattle" }, to: { lat: 64.2008, lon: -149.4937, name: "Alaska" } }, // Through Alaska
-          
-          // Europe <-> Asia
-          { from: { lat: 50.1109, lon: 8.6821, name: "Frankfurt" }, to: { lat: 55.7558, lon: 37.6173, name: "Moscow" } },
-          { from: { lat: 51.5074, lon: -0.1278, name: "London" }, to: { lat: 25.2048, lon: 55.2708, name: "Dubai" } },
-          { from: { lat: 55.7558, lon: 37.6173, name: "Moscow" }, to: { lat: 39.9042, lon: 116.4074, name: "Beijing" } },
-          
-          // Asia Internal  
-          { from: { lat: 39.9042, lon: 116.4074, name: "Beijing" }, to: { lat: 35.6762, lon: 139.6503, name: "Tokyo" } },
-          { from: { lat: 35.6762, lon: 139.6503, name: "Tokyo" }, to: { lat: 37.5665, lon: 126.9780, name: "Seoul" } },
-          { from: { lat: 1.3521, lon: 103.8198, name: "Singapore" }, to: { lat: -6.2088, lon: 106.8456, name: "Jakarta" } }, // Singapore to Jakarta
-          { from: { lat: 25.2048, lon: 55.2708, name: "Dubai" }, to: { lat: 19.0760, lon: 72.8777, name: "Mumbai" } },
-          
-          // Americas
-          { from: { lat: 40.7128, lon: -74.0060, name: "New York" }, to: { lat: -23.5505, lon: -46.6333, name: "São Paulo" } },
-          { from: { lat: 19.4326, lon: -99.1332, name: "Mexico City" }, to: { lat: -23.5505, lon: -46.6333, name: "São Paulo" } },
-          { from: { lat: 40.7128, lon: -74.0060, name: "New York" }, to: { lat: 45.5017, lon: -73.5673, name: "Montreal" } },
-          
-          // Africa-Middle East
-          { from: { lat: -26.2041, lon: 28.0473, name: "Johannesburg" }, to: { lat: 30.0444, lon: 31.2357, name: "Cairo" } },
-          { from: { lat: 30.0444, lon: 31.2357, name: "Cairo" }, to: { lat: 25.2048, lon: 55.2708, name: "Dubai" } },
-        ];
-
-        // Track active satellites - limit to 7-8 total
-        let activeSatelliteCount = 0;
-        const MAX_SATELLITES = 8;
-        
-        // City locations kept for reference
-        const cityLocations = [
-          { lat: 40.7128, lon: -74.0060, name: "New York" },
-          { lat: 51.5074, lon: -0.1278, name: "London" },
-          { lat: 35.6762, lon: 139.6503, name: "Tokyo" },
-          { lat: 48.8566, lon: 2.3522, name: "Paris" },
-          { lat: -33.8688, lon: 151.2093, name: "Sydney" },
-          { lat: 1.3521, lon: 103.8198, name: "Singapore" },
-          { lat: 37.7749, lon: -122.4194, name: "San Francisco" },
-          { lat: -23.5505, lon: -46.6333, name: "São Paulo" },
-          { lat: 55.7558, lon: 37.6173, name: "Moscow" },
-          { lat: 39.9042, lon: 116.4074, name: "Beijing" },
-          { lat: 19.0760, lon: 72.8777, name: "Mumbai" },
-          { lat: 25.2048, lon: 55.2708, name: "Dubai" },
-          { lat: -26.2041, lon: 28.0473, name: "Johannesburg" },
-          { lat: 30.0444, lon: 31.2357, name: "Cairo" },
-          { lat: 52.5200, lon: 13.4050, name: "Berlin" },
-          { lat: 43.6532, lon: -79.3832, name: "Toronto" },
-        ];
-
         // SLOWER, SMOOTHER ROTATION
         let isInteracting = false;
         let rotationSpeed = 0.2; // Much slower rotation
@@ -361,140 +306,6 @@ export default function AWSGlobe({ awsStats }) {
         const stars = new THREE.Points(starsGeometry, starsMaterial);
         starsScene.add(stars);
 
-        // ===== THREE.JS SATELLITES - PROPERLY SYNCED =====
-        const satellitesCanvas = document.createElement('canvas');
-        satellitesCanvas.style.position = 'absolute';
-        satellitesCanvas.style.top = '0';
-        satellitesCanvas.style.left = '0';
-        satellitesCanvas.style.width = '100%';
-        satellitesCanvas.style.height = '100%';
-        satellitesCanvas.style.pointerEvents = 'none';
-        satellitesCanvas.style.zIndex = '2';
-        containerRef.current.appendChild(satellitesCanvas);
-
-        const satellitesRenderer = new THREE.WebGLRenderer({ 
-          canvas: satellitesCanvas,
-          alpha: true,
-          antialias: true 
-        });
-        satellitesRenderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-
-        satellitesScene = new THREE.Scene();
-        const satellitesCamera = new THREE.PerspectiveCamera(
-          45,
-          containerRef.current.clientWidth / containerRef.current.clientHeight,
-          0.1,
-          1000
-        );
-        satellitesCamera.position.z = 3; // Match the globe distance
-
-        // Satellites group that rotates with globe
-        const satellitesGroup = new THREE.Group();
-        satellitesScene.add(satellitesGroup);
-
-        let satellites = [];
-
-        // FIXED: Better lat/lon to 3D conversion matching globe scale
-        // This converts lat/lon to 3D coordinates that rotate WITH the globe
-        const latLonToVector3 = (lat, lon, radius = 1.05, rotationOffset = 0) => {
-          // Adjusted to match the globe's visual size
-          const phi = (90 - lat) * (Math.PI / 180);
-          // Apply rotation offset to longitude to keep satellites fixed to globe surface
-          const theta = (lon + 180 + rotationOffset) * (Math.PI / 180);
-          
-          return new THREE.Vector3(
-            -(radius * Math.sin(phi) * Math.cos(theta)),
-            radius * Math.cos(phi),
-            radius * Math.sin(phi) * Math.sin(theta)
-          );
-        };
-
-        // Create satellite function - SIMPLE APPROACH
-        const createSatellite = () => {
-          if (activeSatelliteCount >= MAX_SATELLITES) {
-            return;
-          }
-          
-          const route = trafficRoutes[Math.floor(Math.random() * trafficRoutes.length)];
-          
-          // Calculate positions WITHOUT rotation offset - positions are fixed in world space
-          const fromPos = latLonToVector3(route.from.lat, route.from.lon, 1.08, 0);
-          const toPos = latLonToVector3(route.to.lat, route.to.lon, 1.08, 0);
-
-          // Create arc
-          const midPoint = new THREE.Vector3().addVectors(fromPos, toPos).multiplyScalar(0.5);
-          const distance = fromPos.distanceTo(toPos);
-          const arcHeight = Math.min(0.3, 0.1 + distance * 0.08);
-          midPoint.normalize().multiplyScalar(1.08 + arcHeight);
-
-          const curve = new THREE.QuadraticBezierCurve3(fromPos, midPoint, toPos);
-          const points = curve.getPoints(50); // More points for smoother line
-          
-          // Path line
-          const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-          const lineMaterial = new THREE.LineBasicMaterial({
-            color: 0x00ffff,
-            transparent: true,
-            opacity: 0.8,
-            linewidth: 3,
-          });
-          const line = new THREE.Line(lineGeometry, lineMaterial);
-          satellitesGroup.add(line);
-
-          // Satellite dot
-          const satGeometry = new THREE.SphereGeometry(0.01, 8, 8);
-          const satMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0xffcc00,
-            transparent: true,
-            opacity: 0.95,
-          });
-          const satellite = new THREE.Mesh(satGeometry, satMaterial);
-          satellitesGroup.add(satellite);
-
-          // Trail
-          const trailGeometry = new THREE.SphereGeometry(0.015, 8, 8);
-          const trailMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffcc00,
-            transparent: true,
-            opacity: 0.6,
-          });
-          const trail = new THREE.Mesh(trailGeometry, trailMaterial);
-          satellitesGroup.add(trail);
-
-          activeSatelliteCount++;
-
-          satellites.push({
-            mesh: satellite,
-            trail: trail,
-            line: line,
-            curve: curve,
-            progress: 0,
-            speed: 0.0015 + Math.random() * 0.002,
-          });
-
-          setTimeout(() => {
-            satellitesGroup.remove(line);
-            satellitesGroup.remove(satellite);
-            satellitesGroup.remove(trail);
-            satellites = satellites.filter(s => s.mesh !== satellite);
-            activeSatelliteCount--;
-          }, 35000);
-        };
-
-        // Create initial satellites - start with 3-4
-        const initialCount = 3 + Math.floor(Math.random() * 2); // 3 or 4
-        for (let i = 0; i < initialCount; i++) {
-          setTimeout(() => createSatellite(), i * 1000);
-        }
-        
-        // Keep creating new satellites with alternating pattern
-        // Create bursts of 1-2 satellites every 4-6 seconds
-        setInterval(() => {
-          const burstSize = 1 + Math.floor(Math.random() * 2); // 1 or 2
-          for (let i = 0; i < burstSize; i++) {
-            setTimeout(() => createSatellite(), i * 800);
-          }
-        }, 4000 + Math.random() * 2000); // 4-6 seconds between bursts
 
         // FIXED SYNC: Track rotation properly
         let lastFrameTime = Date.now();
@@ -511,41 +322,7 @@ export default function AWSGlobe({ awsStats }) {
           stars.rotation.y += 0.0002;
           stars.rotation.x += 0.0001;
           
-          // Sync satellitesGroup with globe rotation
-          const currentRotationX = chart.get("rotationX") || 0;
-          const currentRotationY = chart.get("rotationY") || 0;
-          satellitesGroup.rotation.y = (currentRotationX * Math.PI) / 180;
-          satellitesGroup.rotation.x = -(currentRotationY * Math.PI) / 180;
-          
-          // Animate satellites along their paths - SIMPLE
-          satellites.forEach(sat => {
-            sat.progress += sat.speed;
-            
-            if (sat.progress <= 0.98) {
-              const pos = sat.curve.getPoint(sat.progress);
-              sat.mesh.position.copy(pos);
-              sat.trail.position.copy(pos);
-              
-              // Fade effects
-              if (sat.progress > 0.9) {
-                const fadeOutProgress = (sat.progress - 0.9) / 0.08;
-                sat.line.material.opacity = Math.sin(sat.progress * Math.PI) * 0.8 * (1 - fadeOutProgress);
-                sat.trail.material.opacity = (1 - sat.progress) * 0.6 * (1 - fadeOutProgress);
-                sat.mesh.material.opacity = (0.95 - (sat.progress * 0.1)) * (1 - fadeOutProgress);
-              } else {
-                sat.line.material.opacity = Math.sin(sat.progress * Math.PI) * 0.8;
-                sat.trail.material.opacity = (1 - sat.progress) * 0.6;
-                sat.mesh.material.opacity = 0.95 - (sat.progress * 0.05);
-              }
-            } else {
-              sat.mesh.material.opacity = 0;
-              sat.trail.material.opacity = 0;
-              sat.line.material.opacity = 0;
-            }
-          });
-          
           starsRenderer.render(starsScene, starsCamera);
-          satellitesRenderer.render(satellitesScene, satellitesCamera);
         };
         
         animate();
@@ -559,10 +336,6 @@ export default function AWSGlobe({ awsStats }) {
           starsCamera.aspect = width / height;
           starsCamera.updateProjectionMatrix();
           starsRenderer.setSize(width, height);
-          
-          satellitesCamera.aspect = width / height;
-          satellitesCamera.updateProjectionMatrix();
-          satellitesRenderer.setSize(width, height);
         };
         
         window.addEventListener('resize', handleResize);
