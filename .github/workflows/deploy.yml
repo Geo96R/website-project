@@ -68,7 +68,7 @@ jobs:
       env:
         KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
       run: |
-        echo "$KUBE_CONFIG" | base64 -d > /tmp/kubeconfig
+        echo "$KUBE_CONFIG" > /tmp/kubeconfig
         export KUBECONFIG=/tmp/kubeconfig
         kubectl rollout restart deployment/website-project
         kubectl rollout status deployment/website-project --timeout=300s
