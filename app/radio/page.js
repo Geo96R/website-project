@@ -16,28 +16,9 @@ export default function RadioStream() {
   const [loading, setLoading] = useState(false);
   const audioRef = useRef(null);
 
-  // Countries list - alphabetical
-  const countries = [
-    'All origins', 'Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
-    'Bangladesh', 'Belarus', 'Belgium', 'Brazil', 'Bulgaria', 'Cambodia', 'Canada', 'Chile', 'China',
-    'Colombia', 'Croatia', 'Czech Republic', 'Denmark', 'Egypt', 'Estonia', 'Finland', 'France',
-    'Georgia', 'Germany', 'Greece', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq',
-    'Ireland', 'Israel', 'Italy', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kuwait', 'Latvia',
-    'Lebanon', 'Lithuania', 'Luxembourg', 'Malaysia', 'Mexico', 'Morocco', 'Netherlands', 'New Zealand',
-    'Nigeria', 'Norway', 'Pakistan', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Romania', 'Russia',
-    'Saudi Arabia', 'Serbia', 'Singapore', 'Slovakia', 'Slovenia', 'South Africa', 'South Korea', 'Spain',
-    'Sweden', 'Switzerland', 'Thailand', 'Turkey', 'Ukraine', 'United Arab Emirates', 'United Kingdom',
-    'United States', 'Uruguay', 'Venezuela', 'Vietnam'
-  ];
-  
-  const genres = [
-    'All genres', 'Jazz', 'Rock', 'Pop', 'Electronic', 'News', 'Classical', 'Hip-Hop', 
-    'Country', 'Blues', 'Folk', 'Reggae', 'R&B', 'Soul', 'Funk', 'Disco', 'Punk',
-    'Metal', 'Alternative', 'Indie', 'Ambient', 'Chillout', 'Trance', 'House',
-    'Techno', 'Drum & Bass', 'Dubstep', 'Trap', 'Lo-Fi', 'World Music', 'Latin',
-    'Salsa', 'Bachata', 'Merengue', 'Samba', 'Bossa Nova', 'Flamenco', 'Celtic',
-    'Traditional', 'Religious', 'Spiritual', 'Meditation', 'Nature Sounds'
-  ];
+  // Countries and genres - will be loaded from API
+  const [countries, setCountries] = useState(['All origins']);
+  const [genres, setGenres] = useState(['All genres']);
 
   // Fetch radio stations from our API route
   const fetchRadioStations = async (country = null, genre = null) => {
@@ -80,6 +61,36 @@ export default function RadioStream() {
     }
   };
 
+  // Load countries and genres from API on mount
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        const response = await fetch('/api/radio-countries');
+        const data = await response.json();
+        if (data.countries && Array.isArray(data.countries)) {
+          setCountries(['All origins', ...data.countries]);
+        }
+      } catch (error) {
+        console.error('Error loading countries:', error);
+      }
+    };
+    
+    const loadGenres = async () => {
+      try {
+        const response = await fetch('/api/radio-genres');
+        const data = await response.json();
+        if (data.genres && Array.isArray(data.genres)) {
+          setGenres(['All genres', ...data.genres]);
+        }
+      } catch (error) {
+        console.error('Error loading genres:', error);
+      }
+    };
+    
+    loadCountries();
+    loadGenres();
+  }, []);
+
   // Load stations on mount and when filters change
   useEffect(() => {
     fetchRadioStations(selectedCountry, selectedGenre);
@@ -98,23 +109,41 @@ export default function RadioStream() {
     setPresets(defaultPresets);
   }, []);
 
-  const handleStationSelect = (station) => {
+  const handleStationSelect = async (station) => {
     setCurrentStation(station);
     if (audioRef.current) {
-      audioRef.current.src = station.url;
-      audioRef.current.play();
-      setIsPlaying(true);
+      try {
+        // Validate URL before setting
+        const url = new URL(station.url);
+        if (!['http:', 'https:'].includes(url.protocol)) {
+          throw new Error('Invalid URL protocol');
+        }
+        
+        audioRef.current.src = station.url;
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error('Error playing station:', error);
+        alert(`Failed to play ${station.name}. The stream may be unavailable.`);
+        setIsPlaying(false);
+      }
     }
   };
 
-  const togglePlayPause = () => {
+  const togglePlayPause = async () => {
     if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
+      try {
+        if (isPlaying) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+        } else {
+          await audioRef.current.play();
+          setIsPlaying(true);
+        }
+      } catch (error) {
+        console.error('Error toggling play/pause:', error);
+        alert('Failed to play station. The stream may be unavailable.');
         setIsPlaying(false);
-      } else {
-        audioRef.current.play();
-        setIsPlaying(true);
       }
     }
   };
@@ -144,13 +173,15 @@ export default function RadioStream() {
   const handleFrequencyChange = (newFreq) => {
     setFrequency(newFreq);
     // Find the closest station to the frequency
-    const closestStation = stations.reduce((prev, curr) => {
-      return Math.abs(curr.frequency - newFreq) < Math.abs(prev.frequency - newFreq) ? curr : prev;
-    });
-    
-    // Auto tune to closest station within 0.5 MHz(can change the frequency tolerance if you want)
-    if (Math.abs(closestStation.frequency - newFreq) <= 0.5) {
-      handleStationSelect(closestStation);
+    if (stations.length > 0) {
+      const closestStation = stations.reduce((prev, curr) => {
+        return Math.abs(curr.frequency - newFreq) < Math.abs(prev.frequency - newFreq) ? curr : prev;
+      });
+      
+      // Auto tune to closest station within 0.5 MHz
+      if (Math.abs(closestStation.frequency - newFreq) <= 0.5) {
+        handleStationSelect(closestStation);
+      }
     }
   };
 
@@ -171,7 +202,21 @@ export default function RadioStream() {
         </div>
       </div>
       {/* Hidden Audio Element */}
-      <audio ref={audioRef} preload="none" />
+      <audio 
+        ref={audioRef} 
+        preload="none"
+        onError={(e) => {
+          console.error('Audio error:', e);
+          alert('Failed to play station. The stream may be unavailable.');
+          setIsPlaying(false);
+        }}
+        onLoadStart={() => {
+          console.log('Loading station...');
+        }}
+        onCanPlay={() => {
+          console.log('Station ready to play');
+        }}
+      />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
         
@@ -183,7 +228,7 @@ export default function RadioStream() {
             <h2 className="text-lg font-bold text-tron-cyan font-mono mb-4">
               STATION <span className="text-tron-blue">.STATUS</span>
             </h2>
-            {currentStation && (
+            {currentStation ? (
               <div className="space-y-3">
                 <div className="text-2xl font-bold text-white">{currentStation.name}</div>
                 <div className="text-sm text-gray-400">{currentStation.country} - {currentStation.genre}</div>
@@ -197,14 +242,22 @@ export default function RadioStream() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Status:</span>
-                  <span className="text-green-400">{isPlaying ? 'Online' : 'Offline'}</span>
+                  <span className={isPlaying ? 'text-green-400' : 'text-red-400'}>{isPlaying ? 'Online' : 'Offline'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Frequency:</span>
-                  <span className="text-tron-cyan">{currentStation.frequency} FM</span>
+                  <span className="text-tron-cyan">{currentStation.frequency.toFixed(1)} FM</span>
                 </div>
                 <div className="text-xs text-gray-500 mt-2">Tags: {currentStation.tags}</div>
+                <button
+                  onClick={togglePlayPause}
+                  className="w-full mt-4 px-4 py-2 border border-tron-cyan text-tron-cyan hover:bg-tron-cyan hover:text-black transition-colors"
+                >
+                  {isPlaying ? '⏸ PAUSE' : '▶ PLAY'}
+                </button>
               </div>
+            ) : (
+              <div className="text-gray-500 text-center py-4">No station selected</div>
             )}
           </div>
 
@@ -321,7 +374,10 @@ export default function RadioStream() {
               STATION <span className="text-tron-blue">.DIRECTORY</span>
               {loading && <span className="text-tron-blue ml-2">(LOADING...)</span>}
             </h2>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {filteredStations.length === 0 && !loading && (
+                <div className="text-center text-gray-500 py-4">No stations found. Try different filters.</div>
+              )}
               {filteredStations.map((station, index) => (
                 <div
                   key={index}

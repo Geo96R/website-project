@@ -9,13 +9,16 @@ export async function GET(request) {
   const search = url.searchParams.get('search');
   
   try {
-    // try multiple radio browser endpoints
+    // try multiple radio browser endpoints - more endpoints for better reliability
     const apiEndpoints = [
       'https://de1.api.radio-browser.info',
       'https://de2.api.radio-browser.info', 
       'https://at1.api.radio-browser.info',
       'https://nl1.api.radio-browser.info',
-      'https://fr1.api.radio-browser.info'
+      'https://fr1.api.radio-browser.info',
+      'https://uk1.api.radio-browser.info',
+      'https://us1.api.radio-browser.info',
+      'https://ca1.api.radio-browser.info'
     ];
     
     let apiUrl;
@@ -27,7 +30,7 @@ export async function GET(request) {
     } else if (genre && genre !== 'All genres') {
       apiUrl = `${apiEndpoints[0]}/json/stations/bytag/${encodeURIComponent(genre)}`;
     } else {
-      apiUrl = `${apiEndpoints[0]}/json/stations/topclick/200`;
+      apiUrl = `${apiEndpoints[0]}/json/stations/topclick/500`;
     }
     
     // add query params
@@ -37,7 +40,7 @@ export async function GET(request) {
     radioBrowserUrl.searchParams.set('reverse', 'true');
     radioBrowserUrl.searchParams.set('lastcheckok', '1');
     radioBrowserUrl.searchParams.set('ssl_error', '0');
-    radioBrowserUrl.searchParams.set('limit', '200');
+    radioBrowserUrl.searchParams.set('limit', '500');
     
     console.log('Fetching from Radio Browser API:', radioBrowserUrl.toString());
     console.log('Genre filter:', genre);
@@ -54,7 +57,7 @@ export async function GET(request) {
         
         // Create AbortController for timeout
         const controller = new AbortController();
-        // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
         response = await fetch(currentUrl, {
           headers: {
@@ -89,41 +92,59 @@ export async function GET(request) {
       throw new Error('Invalid response from Radio Browser API');
     }
     
-    // filter and format stations
+    // filter and format stations - validate URLs and ensure they work
     let formattedStations = data
       .filter(station => {
-        return station.url && 
-               station.name && 
-               station.country &&
-               station.lastcheckok === 1 &&
-               !station.broken;
+        if (!station.url || !station.name || !station.country) return false;
+        if (station.lastcheckok !== 1 || station.broken) return false;
+        
+        // Validate URL format - must be http or https
+        try {
+          const url = new URL(station.url);
+          if (!['http:', 'https:'].includes(url.protocol)) return false;
+        } catch {
+          return false; // Invalid URL format
+        }
+        
+        return true;
       });
 
-    // extra filtering for search
+    // extra filtering for search - more flexible search
     if (search) {
       const searchLower = search.toLowerCase();
       formattedStations = formattedStations.filter(station => {
         return station.name.toLowerCase().includes(searchLower) ||
                station.country.toLowerCase().includes(searchLower) ||
-               (station.tags && station.tags.toLowerCase().includes(searchLower));
+               (station.tags && station.tags.toLowerCase().includes(searchLower)) ||
+               (station.codec && station.codec.toLowerCase().includes(searchLower));
       });
     }
+    
+    // Sort by click count (most popular first) if no specific order
+    formattedStations.sort((a, b) => (b.clickcount || 0) - (a.clickcount || 0));
 
     formattedStations = formattedStations
-      .slice(0, 200)
-      .map((station, index) => ({
-        name: station.name,
-        country: station.country,
-        genre: station.tags ? station.tags.split(',')[0].trim() : 'Music',
-        frequency: 87.5 + (index * 0.1),
-        bitrate: station.bitrate || 128,
-        codec: station.codec || 'MP3',
-        tags: station.tags || 'music',
-        url: station.url,
-        uuid: station.stationuuid,
-        clickcount: station.clickcount || 0,
-        votes: station.votes || 0
-      }));
+      .slice(0, 500)
+      .map((station, index) => {
+        // Extract first genre from tags
+        const firstTag = station.tags ? station.tags.split(',')[0].trim() : 'Music';
+        // Normalize genre name
+        const genre = firstTag.charAt(0).toUpperCase() + firstTag.slice(1).toLowerCase();
+        
+        return {
+          name: station.name,
+          country: station.country,
+          genre: genre,
+          frequency: 87.5 + (index * 0.1),
+          bitrate: station.bitrate || 128,
+          codec: station.codec || 'MP3',
+          tags: station.tags || 'music',
+          url: station.url,
+          uuid: station.stationuuid,
+          clickcount: station.clickcount || 0,
+          votes: station.votes || 0
+        };
+      });
     
     console.log(`Successfully fetched ${formattedStations.length} stations`);
     

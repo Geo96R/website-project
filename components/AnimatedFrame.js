@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 export default function AnimatedFrame() {
-  const [animationStep, setAnimationStep] = useState(0);
+  const [animationProgress, setAnimationProgress] = useState(0); // 0 to 1 for single continuous animation
   const [showContent, setShowContent] = useState(false);
   const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const [isClient, setIsClient] = useState(false);
@@ -137,23 +137,33 @@ export default function AnimatedFrame() {
       }
     });
 
-    // Animation timers
-    const timer1 = setTimeout(() => setAnimationStep(1), 50);
-    const timer2 = setTimeout(() => {
-      // Lock document height when intro animation completes
-      const currentHeight = getActualContentHeight();
-      setLockedDocumentHeight(currentHeight);
-      setShowContent(true);
-      handleScroll(); // Initial scroll check
-    }, 1500);
+    // Single continuous animation - start from bottom-left, go clockwise
+    const animationDuration = 800; // Total duration in ms for smooth single motion
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / animationDuration, 1);
+      setAnimationProgress(progress);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Lock document height when intro animation completes
+        const currentHeight = getActualContentHeight();
+        setLockedDocumentHeight(currentHeight);
+        setShowContent(true);
+        handleScroll(); // Initial scroll check
+      }
+    };
+    
+    requestAnimationFrame(animate);
 
     // Initial scroll check and periodic updates for dynamic content
     handleScroll();
     const heightCheckInterval = setInterval(handleScroll, 1000); // Check every second
 
     return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
       clearInterval(heightCheckInterval);
       window.removeEventListener('resize', calculateDimensions);
       window.removeEventListener('orientationchange', calculateDimensions);
@@ -188,11 +198,35 @@ export default function AnimatedFrame() {
   // Left and right border heights should extend to full document height when scrolling
   const sidesBorderHeight = scrollState.isAtBottom ? documentHeight : Math.max(documentHeight, frameHeight);
 
+  // Calculate border progressions for single continuous animation
+  // Animation goes: bottom-left -> up (left border) -> right (top border) -> down (right border) -> left (bottom border)
+  // Total perimeter = 2 * (width + height)
+  const perimeter = 2 * (width + sidesBorderHeight);
+  
+  // Calculate progress for each border segment based on animation progress
+  // Left border: 0 to height/perimeter (grows from bottom to top)
+  // Top border: height/perimeter to (height + width)/perimeter (grows from left to right)
+  // Right border: (height + width)/perimeter to (2*height + width)/perimeter (grows from top to bottom)
+  // Bottom border: (2*height + width)/perimeter to 1 (grows from right to left)
+  
+  const currentDistance = animationProgress * perimeter;
+  
+  // Left border progress (0 to height)
+  const leftProgress = Math.min(1, Math.max(0, currentDistance / sidesBorderHeight));
+  
+  // Top border progress (height to height + width)
+  const topProgress = Math.min(1, Math.max(0, (currentDistance - sidesBorderHeight) / width));
+  
+  // Right border progress (height + width to 2*height + width)
+  const rightProgress = Math.min(1, Math.max(0, (currentDistance - sidesBorderHeight - width) / sidesBorderHeight));
+  
+  // Bottom border progress (2*height + width to perimeter)
+  const bottomProgress = Math.min(1, Math.max(0, (currentDistance - 2 * sidesBorderHeight - width) / width));
+  
   // After intro animation, use simple border system
   // Bottom border is always at the bottom of the frame, only shows when at bottom of page
-  // Use bottom: 0 instead of top to prevent position changes during scroll
   const bottomBorderTop = documentHeight - 2; // For intro animation only
-  const bottomBorderWidth = showContent ? (scrollState.isAtBottom ? width : 0) : 0; // Simple show/hide after intro
+  const bottomBorderWidth = showContent ? (scrollState.isAtBottom ? width : 0) : (width * bottomProgress); // Use progress during intro
 
   return (
     <>
@@ -209,147 +243,118 @@ export default function AnimatedFrame() {
           height: `${documentHeight}px`,
         }}
       >
-        {/* LEFT BORDER (Cyan) - Extends to full document height */}
+        {/* LEFT BORDER (Cyan) - Starts from bottom-left, goes up */}
         <div
           className="absolute w-0.5 bg-tron-cyan"
           style={{
             filter: 'drop-shadow(0 0 10px #00fff9)',
             left: '0px',
-            top: '0px',
-            height: animationStep === 0 ? '0px' : `${sidesBorderHeight}px`,
-            transition: showContent ? 'height 0.4s ease-out' : 'height 0.7s ease-out',
+            bottom: '0px', // Start from bottom
+            height: showContent ? `${sidesBorderHeight}px` : `${sidesBorderHeight * leftProgress}px`,
+            transition: showContent ? 'height 0.4s ease-out' : 'none', // No transition during intro for smooth animation
           }}
         />
 
-        {/* BOTTOM BORDER (Cyan) - Intro animation, then simple show/hide at bottom */}
-        {!showContent ? (
-          // Intro animation: animate from center
-          <div
-            className="absolute h-0.5 bg-tron-cyan"
-            style={{
-              filter: 'drop-shadow(0 0 10px #00fff9)',
-              top: `${bottomBorderTop}px`,
-              left: '0px',
-              width: animationStep === 0 ? '0px' : `${width}px`,
-              transition: 'width 0.7s ease-out',
-            }}
-          />
-        ) : (
-          // After intro: simple show/hide at bottom, fixed position using bottom: 0
-          <div
-            className="absolute h-0.5 bg-tron-cyan"
-            style={{
-              filter: 'drop-shadow(0 0 10px #00fff9)',
-              bottom: '0px', // Fixed at bottom, no position changes
-              left: '0px',
-              width: scrollState.isAtBottom ? `${width}px` : '0px',
-              transition: 'width 0.3s ease-out',
-            }}
-          />
-        )}
+        {/* BOTTOM BORDER (Cyan) - Last segment, goes left from bottom-right */}
+        <div
+          className="absolute h-0.5 bg-tron-cyan"
+          style={{
+            filter: 'drop-shadow(0 0 10px #00fff9)',
+            bottom: '0px',
+            right: '0px', // Start from right
+            width: showContent ? (scrollState.isAtBottom ? `${width}px` : '0px') : `${width * bottomProgress}px`,
+            transition: showContent ? 'width 0.3s ease-out' : 'none', // No transition during intro
+          }}
+        />
 
-        {/* RIGHT BORDER (Cyan) - Extends to full document height */}
+        {/* RIGHT BORDER (Cyan) - Goes down from top-right */}
         <div
           className="absolute w-0.5 bg-tron-cyan"
           style={{
             filter: 'drop-shadow(0 0 10px #00fff9)',
             right: '0px',
-            top: '0px',
-            height: animationStep === 0 ? '0px' : `${sidesBorderHeight}px`,
-            transition: showContent ? 'height 0.4s ease-out' : 'height 0.7s ease-out 0.7s',
+            top: '0px', // Start from top
+            height: showContent ? `${sidesBorderHeight}px` : `${sidesBorderHeight * rightProgress}px`,
+            transition: showContent ? 'height 0.4s ease-out' : 'none', // No transition during intro
           }}
         />
 
-        {/* TOP BORDER (Cyan) - Hides when scrolling, reappears at page top */}
+        {/* TOP BORDER (Cyan) - Goes right from top-left */}
         <div
           className="absolute h-0.5 bg-tron-cyan"
           style={{
             filter: 'drop-shadow(0 0 10px #00fff9)',
             top: '0px',
-            left: `${scrollState.hideTop && !scrollState.isAtTop ? (width / 2) : 0}px`, // Retract to center
-            width: animationStep === 0 ? '0px' : 
-                   (scrollState.hideTop && !scrollState.isAtTop ? '0px' : `${width}px`),
+            left: showContent && scrollState.hideTop && !scrollState.isAtTop ? `${width / 2}px` : '0px', // Retract to center when scrolling
+            width: showContent ? 
+              (scrollState.hideTop && !scrollState.isAtTop ? '0px' : `${width}px`) : 
+              `${width * topProgress}px`,
             transition: showContent ? 
               'width 0.3s ease-out, left 0.3s ease-out' : 
-              'width 0.7s ease-out 0.7s',
+              'none', // No transition during intro
           }}
         />
 
-        {/* INNER BORDER LEFT (Blue Glow) */}
+        {/* INNER BORDER LEFT (Blue Glow) - Starts from bottom-left */}
         <div
           className="absolute w-px bg-tron-blue"
           style={{
             filter: 'drop-shadow(0 0 5px #0099ff)',
             left: '12px',
-            top: '12px',
-            height: animationStep === 0 ? '0px' : `${sidesBorderHeight - 24}px`,
-            transition: showContent ? 'height 0.4s ease-out' : 'height 0.7s ease-out 0.05s',
+            bottom: '12px', // Start from bottom
+            height: showContent ? `${sidesBorderHeight - 24}px` : `${(sidesBorderHeight - 24) * leftProgress}px`,
+            transition: showContent ? 'height 0.4s ease-out' : 'none',
           }}
         />
 
-        {/* INNER BORDER BOTTOM (Blue Glow) - Intro animation, then simple show/hide at bottom */}
-        {!showContent ? (
-          // Intro animation: animate from center
-          <div
-            className="absolute h-px bg-tron-blue"
-            style={{
-              filter: 'drop-shadow(0 0 5px #0099ff)',
-              top: `${bottomBorderTop - 12}px`,
-              left: '12px',
-              width: animationStep === 0 ? '0px' : `${width - 24}px`,
-              transition: 'width 0.7s ease-out 0.05s',
-            }}
-          />
-        ) : (
-          // After intro: simple show/hide at bottom, fixed position using bottom: 12px
-          <div
-            className="absolute h-px bg-tron-blue"
-            style={{
-              filter: 'drop-shadow(0 0 5px #0099ff)',
-              bottom: '12px', // Fixed at bottom, no position changes
-              left: '12px',
-              width: scrollState.isAtBottom ? `${width - 24}px` : '0px',
-              transition: 'width 0.3s ease-out',
-            }}
-          />
-        )}
+        {/* INNER BORDER BOTTOM (Blue Glow) - Last segment, goes left from bottom-right */}
+        <div
+          className="absolute h-px bg-tron-blue"
+          style={{
+            filter: 'drop-shadow(0 0 5px #0099ff)',
+            bottom: '12px',
+            right: '12px', // Start from right
+            width: showContent ? (scrollState.isAtBottom ? `${width - 24}px` : '0px') : `${(width - 24) * bottomProgress}px`,
+            transition: showContent ? 'width 0.3s ease-out' : 'none',
+          }}
+        />
 
-        {/* INNER BORDER RIGHT (Blue Glow) */}
+        {/* INNER BORDER RIGHT (Blue Glow) - Goes down from top-right */}
         <div
           className="absolute w-px bg-tron-blue"
           style={{
             filter: 'drop-shadow(0 0 5px #0099ff)',
             right: '12px',
-            top: '12px',
-            height: animationStep === 0 ? '0px' : `${sidesBorderHeight - 24}px`,
-            transition: showContent ? 'height 0.4s ease-out' : 'height 0.7s ease-out 0.75s',
+            top: '12px', // Start from top
+            height: showContent ? `${sidesBorderHeight - 24}px` : `${(sidesBorderHeight - 24) * rightProgress}px`,
+            transition: showContent ? 'height 0.4s ease-out' : 'none',
           }}
         />
 
-        {/* INNER BORDER TOP (Blue Glow) */}
+        {/* INNER BORDER TOP (Blue Glow) - Goes right from top-left */}
         <div
           className="absolute h-px bg-tron-blue"
           style={{
             filter: 'drop-shadow(0 0 5px #0099ff)',
             top: '12px',
-            left: `${12 + (scrollState.hideTop && !scrollState.isAtTop ? (width - 24) / 2 : 0)}px`,
-            width: animationStep === 0 ? '0px' : 
-                   (scrollState.hideTop && !scrollState.isAtTop ? '0px' : `${width - 24}px`),
+            left: showContent && scrollState.hideTop && !scrollState.isAtTop ? `${12 + (width - 24) / 2}px` : '12px',
+            width: showContent ? 
+              (scrollState.hideTop && !scrollState.isAtTop ? '0px' : `${width - 24}px`) : 
+              `${(width - 24) * topProgress}px`,
             transition: showContent ? 
               'width 0.3s ease-out, left 0.3s ease-out' : 
-              'width 0.7s ease-out 0.75s',
+              'none',
           }}
         />
 
-        {/* CORNER ACCENTS - Only show when borders are visible */}
+        {/* CORNER ACCENTS - Show when animation completes */}
         {[
-          { side: 'top-left', top: '0px', left: '0px', delay: '1.05s', hideCondition: scrollState.hideTop && !scrollState.isAtTop },
-          { side: 'top-right', top: '0px', right: '0px', delay: '1.1s', hideCondition: scrollState.hideTop && !scrollState.isAtTop },
-          { side: 'bottom-left', bottom: '0px', left: '0px', delay: '1.15s', hideCondition: !scrollState.isAtBottom },
-          { side: 'bottom-right', bottom: '0px', right: '0px', delay: '1.2s', hideCondition: !scrollState.isAtBottom },
+          { side: 'top-left', top: '0px', left: '0px', hideCondition: scrollState.hideTop && !scrollState.isAtTop },
+          { side: 'top-right', top: '0px', right: '0px', hideCondition: scrollState.hideTop && !scrollState.isAtTop },
+          { side: 'bottom-left', bottom: '0px', left: '0px', hideCondition: !scrollState.isAtBottom },
+          { side: 'bottom-right', bottom: '0px', right: '0px', hideCondition: !scrollState.isAtBottom },
         ].map((corner, idx) => {
-          const shouldShow = animationStep !== 0 && !corner.hideCondition;
-          const isBottomCorner = corner.side.includes('bottom');
+          const shouldShow = animationProgress >= 1 && !corner.hideCondition;
 
           return (
             <div
@@ -357,14 +362,10 @@ export default function AnimatedFrame() {
               className="absolute w-10 h-10"
               style={{
                 ...corner,
-                ...(isBottomCorner && { 
-                  bottom: 'auto',
-                  top: `${bottomBorderTop - (corner.side.includes('bottom') ? 40 : 0)}px` 
-                }),
                 opacity: shouldShow ? 1 : 0,
                 transition: showContent ? 
-                  `opacity 0.3s ease-out${isBottomCorner ? ', top 0.4s ease-out' : ''}` : 
-                  `opacity 0.3s ease-out ${corner.delay}`,
+                  'opacity 0.3s ease-out' : 
+                  'opacity 0.2s ease-out',
               }}
             >
               <div
