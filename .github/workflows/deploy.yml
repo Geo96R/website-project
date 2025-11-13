@@ -1,81 +1,67 @@
 name: Build and Deploy
 
 on:
-  workflow_call:
-    secrets:
-      GHCR_TOKEN:
-        required: true
-      KUBECONFIG:
-        required: true
-
-
-permissions:
-  contents: read
-  packages: write
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
-
+    
     steps:
-      # Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+          
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./docker/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
-      # Set up Docker builder
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # Authenticate to GitHub Container Registry
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: geo96r
-          password: ${{ secrets.GHCR_TOKEN }}
-
-      # Generate metadata 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha,prefix=main-
-
-      # Build and push the Docker image to GHCR
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # Set up kubectl for deployment
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.29.0'
-
-      # Configure kubeconfig 
-      - name: Configure kubeconfig
-        run: |
-          echo "${{ secrets.KUBECONFIG }}" > kubeconfig
-          chmod 600 kubeconfig
-          export KUBECONFIG=$PWD/kubeconfig
-          kubectl cluster-info
-          kubectl get nodes
-
-      # Roll out new image to le cluster c'est a dire kubernetes
-      - name: Rollout new image
-        run: |
-          export KUBECONFIG=$PWD/kubeconfig
-          echo "Force restarting deployment to pull new image..."
-          kubectl rollout restart deployment website-project --namespace default
-          kubectl rollout status deployment/website-project --namespace default --timeout=180s
-
+  deploy-to-k3s:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+    
+    - name: Deploy to K3s
+      env:
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      run: |
+        echo "$KUBE_CONFIG" | base64 -d > /tmp/kubeconfig
+        export KUBECONFIG=/tmp/kubeconfig
+        kubectl rollout restart deployment/website-project
+        kubectl rollout status deployment/website-project --timeout=300s
