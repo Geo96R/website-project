@@ -138,26 +138,40 @@ export default function AnimatedFrame() {
     });
 
     // Single continuous animation - start from bottom-left, go clockwise
-    const animationDuration = 800; // Total duration in ms for smooth single motion
-    const startTime = Date.now();
+    // Wait for dimensions to be calculated before starting animation
+    let animationFrameId = null;
+    let animationTimeout = null;
     
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / animationDuration, 1);
-      setAnimationProgress(progress);
+    if (containerDimensions.width > 0 && !showContent) {
+      const animationDuration = 800; // Total duration in ms for smooth single motion
       
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Lock document height when intro animation completes
-        const currentHeight = getActualContentHeight();
-        setLockedDocumentHeight(currentHeight);
-        setShowContent(true);
-        handleScroll(); // Initial scroll check
-      }
-    };
-    
-    requestAnimationFrame(animate);
+      const animate = () => {
+        const startTime = Date.now();
+        
+        const animateLoop = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / animationDuration, 1);
+          setAnimationProgress(progress);
+          
+          if (progress < 1) {
+            animationFrameId = requestAnimationFrame(animateLoop);
+          } else {
+            // Lock document height when intro animation completes
+            const currentHeight = getActualContentHeight();
+            setLockedDocumentHeight(currentHeight);
+            setShowContent(true);
+            handleScroll(); // Initial scroll check
+          }
+        };
+        
+        // Small delay to ensure dimensions are set
+        animationTimeout = setTimeout(() => {
+          animationFrameId = requestAnimationFrame(animateLoop);
+        }, 50);
+      };
+      
+      animate();
+    }
 
     // Initial scroll check and periodic updates for dynamic content
     handleScroll();
@@ -165,12 +179,18 @@ export default function AnimatedFrame() {
 
     return () => {
       clearInterval(heightCheckInterval);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      if (animationTimeout) {
+        clearTimeout(animationTimeout);
+      }
       window.removeEventListener('resize', calculateDimensions);
       window.removeEventListener('orientationchange', calculateDimensions);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('wheel', handleZoom);
     };
-  }, [isClient, showContent]);
+  }, [isClient, containerDimensions.width, showContent]);
 
   // --- Layout Math ---
   const borderOffset = 20;
@@ -200,28 +220,36 @@ export default function AnimatedFrame() {
 
   // Calculate border progressions for single continuous animation
   // Animation goes: bottom-left -> up (left border) -> right (top border) -> down (right border) -> left (bottom border)
-  // Total perimeter = 2 * (width + height)
-  const perimeter = 2 * (width + sidesBorderHeight);
+  // Only calculate if we have valid dimensions
+  let leftProgress = 0;
+  let topProgress = 0;
+  let rightProgress = 0;
+  let bottomProgress = 0;
   
-  // Calculate progress for each border segment based on animation progress
-  // Left border: 0 to height/perimeter (grows from bottom to top)
-  // Top border: height/perimeter to (height + width)/perimeter (grows from left to right)
-  // Right border: (height + width)/perimeter to (2*height + width)/perimeter (grows from top to bottom)
-  // Bottom border: (2*height + width)/perimeter to 1 (grows from right to left)
-  
-  const currentDistance = animationProgress * perimeter;
-  
-  // Left border progress (0 to height)
-  const leftProgress = Math.min(1, Math.max(0, currentDistance / sidesBorderHeight));
-  
-  // Top border progress (height to height + width)
-  const topProgress = Math.min(1, Math.max(0, (currentDistance - sidesBorderHeight) / width));
-  
-  // Right border progress (height + width to 2*height + width)
-  const rightProgress = Math.min(1, Math.max(0, (currentDistance - sidesBorderHeight - width) / sidesBorderHeight));
-  
-  // Bottom border progress (2*height + width to perimeter)
-  const bottomProgress = Math.min(1, Math.max(0, (currentDistance - 2 * sidesBorderHeight - width) / width));
+  if (width > 0 && sidesBorderHeight > 0) {
+    // Total perimeter = 2 * (width + height)
+    const perimeter = 2 * (width + sidesBorderHeight);
+    
+    // Calculate progress for each border segment based on animation progress
+    // Left border: 0 to height/perimeter (grows from bottom to top)
+    // Top border: height/perimeter to (height + width)/perimeter (grows from left to right)
+    // Right border: (height + width)/perimeter to (2*height + width)/perimeter (grows from top to bottom)
+    // Bottom border: (2*height + width)/perimeter to 1 (grows from right to left)
+    
+    const currentDistance = animationProgress * perimeter;
+    
+    // Left border progress (0 to height)
+    leftProgress = Math.min(1, Math.max(0, currentDistance / sidesBorderHeight));
+    
+    // Top border progress (height to height + width)
+    topProgress = Math.min(1, Math.max(0, (currentDistance - sidesBorderHeight) / width));
+    
+    // Right border progress (height + width to 2*height + width)
+    rightProgress = Math.min(1, Math.max(0, (currentDistance - sidesBorderHeight - width) / sidesBorderHeight));
+    
+    // Bottom border progress (2*height + width to perimeter)
+    bottomProgress = Math.min(1, Math.max(0, (currentDistance - 2 * sidesBorderHeight - width) / width));
+  }
   
   // After intro animation, use simple border system
   // Bottom border is always at the bottom of the frame, only shows when at bottom of page
