@@ -66,7 +66,7 @@ jobs:
     
     - name: Deploy to K3s
       env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
       run: |
         echo "$KUBE_CONFIG" | base64 -d > /tmp/kubeconfig
         export KUBECONFIG=/tmp/kubeconfig
