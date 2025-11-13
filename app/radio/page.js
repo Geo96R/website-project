@@ -124,7 +124,6 @@ export default function RadioStream() {
         setIsPlaying(true);
       } catch (error) {
         console.error('Error playing station:', error);
-        alert(`Failed to play ${station.name}. The stream may be unavailable.`);
         setIsPlaying(false);
       }
     }
@@ -142,7 +141,6 @@ export default function RadioStream() {
         }
       } catch (error) {
         console.error('Error toggling play/pause:', error);
-        alert('Failed to play station. The stream may be unavailable.');
         setIsPlaying(false);
       }
     }
@@ -207,14 +205,7 @@ export default function RadioStream() {
         preload="none"
         onError={(e) => {
           console.error('Audio error:', e);
-          alert('Failed to play station. The stream may be unavailable.');
           setIsPlaying(false);
-        }}
-        onLoadStart={() => {
-          console.log('Loading station...');
-        }}
-        onCanPlay={() => {
-          console.log('Station ready to play');
         }}
       />
       
