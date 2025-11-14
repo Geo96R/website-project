@@ -4,6 +4,8 @@ Manage your CF DNS, WAF, and SSL via Terraform + GitHub Actions.
 
 ## Quick Setup
 
+> Automated via GitHub Actions - pushes to main apply changes automatically
+
 ### 1. Create CF API Token
 
 Go to Cloudflare Dashboard > Profile > API Tokens > Create Token
