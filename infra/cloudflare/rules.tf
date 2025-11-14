@@ -10,8 +10,8 @@ resource "cloudflare_ruleset" "redirect_www" {
     action_parameters {
       from_value {
         status_code = 301
-        target_url  = "https://${var.domain}"
       }
+      target_url = "https://${var.domain}"
     }
   }
 }
