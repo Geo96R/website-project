@@ -36,7 +36,7 @@ i will try keep it updated as much as possible wether it is new docker/k8s versi
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16, React 19, Framer Motion, Tailwind CSS 4
+- **Frontend**: Next.js 16, React 19, Framer Motion, Tailwind CSS 3
 - **3D Graphics**: Three.js, amCharts 5
 - **APIs**: AWS Health, Google Cloud Status, Radio Browser, Wikipedia
 - **Infrastructure**: Terraform (Cloudflare provider), GitHub Actions
