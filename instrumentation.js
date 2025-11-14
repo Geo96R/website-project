@@ -1,7 +1,8 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     const { NodeSDK } = await import('@opentelemetry/sdk-node')
-    const { OTLPTraceExporter } = await import('@opentelemetry/exporter-otlp-http')
+    const { OTLPTraceExporter } = await import('@opentelemetry/exporter-trace-otlp-http')
+    const { OTLPMetricExporter } = await import('@opentelemetry/exporter-metrics-otlp-http')
     const { Resource } = await import('@opentelemetry/resources')
     const { SemanticResourceAttributes } = await import('@opentelemetry/semantic-conventions')
     const { getNodeAutoInstrumentations } = await import('@opentelemetry/auto-instrumentations-node')
@@ -19,6 +20,9 @@ export async function register() {
       }),
       traceExporter: new OTLPTraceExporter({
         url: `${otlpEndpoint}/v1/traces`,
+      }),
+      metricExporter: new OTLPMetricExporter({
+        url: `${otlpEndpoint}/v1/metrics`,
       }),
       instrumentations: [
         getNodeAutoInstrumentations({

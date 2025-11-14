@@ -6,7 +6,7 @@ a bit of hopefull inspirations to try do things that are perhaps at times beyond
 inspiring to be better and share my knowledge if can is why i made this, While i don't have 500years of experience from the year 1525(Sorry was born too late) i can still make up with the passion i have for the field for the learning.
 Enjoy what i made, be happy be healthy work hard and believe in your self.
 
-**Current Version: v1.3** - Added ArgoCD GitOps demonstration and infrastructure improvements
+**Current Version: v1.3.0** - Added Grafana Cloud monitoring, ArgoCD GitOps demonstration, and updated to Next.js 16
 
 Note any and all here may be subject for future change if i want to scrape and redo stuff this why ill have versions you can use wayback archive(if they index this beautiful creation) to see previous version
 i will try keep it updated as much as possible wether it is new docker/k8s versions or next js. but life happens so be strong! and google away
@@ -29,22 +29,24 @@ i will try keep it updated as much as possible wether it is new docker/k8s versi
 - Mobile responsive design
 - Docker + Kubernetes deployment ready
 - Infrastructure as Code with Terraform
+- Grafana Cloud monitoring with OpenTelemetry instrumentation
 - ArgoCD GitOps demonstration (see `k8s-demo/argocd/`)
 - Automated CI/CD with GitHub Actions
 - Cloudflare DNS, WAF, and SSL management
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React, Framer Motion, Tailwind CSS
+- **Frontend**: Next.js 16, React 19, Framer Motion, Tailwind CSS 4
 - **3D Graphics**: Three.js, amCharts 5
 - **APIs**: AWS Health, Google Cloud Status, Radio Browser, Wikipedia
 - **Infrastructure**: Terraform (Cloudflare provider), GitHub Actions
 - **Deployment**: Docker, Kubernetes (K3s), GitHub Container Registry
+- **Observability**: Grafana Cloud (metrics, logs, traces), OpenTelemetry
 
 ## Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 20.9.0+ 
 - Docker (optional)
 - Git
 - Enviorment(Server/PC) for the bare minimum of 4-8gb ram (Storage wise dont need much no database)
