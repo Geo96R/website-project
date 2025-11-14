@@ -39,3 +39,16 @@ resource "cloudflare_record" "www_redirect" {
     ignore_changes = []
   }
 }
+
+resource "cloudflare_record" "argocd" {
+  zone_id = var.zone_id
+  name    = "argocd"
+  content = var.server_ip
+  type    = "A"
+  proxied = true
+  
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes = []
+  }
+}
