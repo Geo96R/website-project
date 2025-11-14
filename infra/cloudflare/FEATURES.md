@@ -2,7 +2,7 @@
 
 All features are on the FREE tier.
 
-## Currently Active
+## Currently Active (Auto-deployed via GitHub Actions)
 
 ✅ A record + www redirect  
 ✅ WAF (blocks non-IL traffic except your IP)  
