@@ -14,11 +14,6 @@ resource "cloudflare_zone_settings_override" "main" {
     browser_check = "on"
     hotlink_protection = "off"
     challenge_ttl = 1800
-    minify {
-      css  = "on"
-      js   = "on"
-      html = "on"
-    }
   }
 }
 

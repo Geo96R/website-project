@@ -4,6 +4,13 @@ resource "cloudflare_record" "root_a" {
   content = var.server_ip
   type    = "A"
   proxied = true
+  
+  lifecycle {
+    # Prevents accidental deletion
+    prevent_destroy = false
+    # If record already exists and has different settings, adopt them
+    ignore_changes = []
+  }
 }
 
 resource "cloudflare_record" "acme_challenge" {
@@ -13,6 +20,11 @@ resource "cloudflare_record" "acme_challenge" {
   type    = "TXT"
   proxied = false
   ttl     = 120
+  
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes = []
+  }
 }
 
 resource "cloudflare_record" "www_redirect" {
@@ -21,4 +33,9 @@ resource "cloudflare_record" "www_redirect" {
   content = var.domain
   type    = "CNAME"
   proxied = true
+  
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes = []
+  }
 }

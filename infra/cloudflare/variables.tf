@@ -25,3 +25,4 @@ variable "allowed_ip" {
   description = "Your IP(s) for WAF whitelist - single: 1.2.3.4 or multiple: 1.2.3.4 2.3.4.5 3.4.5.6"
   sensitive   = true
 }
+

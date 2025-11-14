@@ -1,7 +1,7 @@
 variable "enable_security_headers" {
   type        = bool
-  default     = true
-  description = "Add security headers to all responses - recommended"
+  default     = false
+  description = "Add security headers - requires Transform Rules (Pro plan or special permissions)"
 }
 
 resource "cloudflare_ruleset" "security_headers" {

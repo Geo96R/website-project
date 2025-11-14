@@ -7,7 +7,8 @@ output "cf_zone_id" {
 }
 
 output "root_record_id" {
-  value = cloudflare_record.root_a.id
+  value = try(cloudflare_record.root_a.id, "")
+  description = "A record ID (empty if not yet created)"
 }
 
 output "ssl_mode" {
