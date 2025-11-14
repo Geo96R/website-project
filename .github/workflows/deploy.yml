@@ -61,13 +61,12 @@ jobs:
     - name: Run Trivy security scan
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: ghcr.io/${{ github.repository }}:latest
+        image-ref: ${{ steps.meta.outputs.tags }}
         format: 'table'
         exit-code: '0'
         severity: 'CRITICAL,HIGH'
-      env:
-        TRIVY_USERNAME: ${{ github.actor }}
-        TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        registry-username: ${{ github.actor }}
+        registry-password: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-to-k3s:
     needs: build-and-push
