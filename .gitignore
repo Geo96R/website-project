@@ -5,7 +5,7 @@ node_modules/
 
 # Testing
 # /coverage (uncomment if you add test coverage)
-# Kubernetes - keep real configs private
+# Kubernetes secrets only
 k8s/
 # Next.js
 /.next/

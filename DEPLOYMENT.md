@@ -1,8 +1,8 @@
-# George DevOps Site - Deployment Guide
+# Deployment Guide
 
 ## Deployment Options
 
-### 1. Vercel (Recommended for beginners)
+### 1. Vercel
 
 1. Push your code to GitHub
 2. Go to [Vercel](https://vercel.com)
@@ -80,25 +80,4 @@ The deployment uses the following environment variables:
 
 ### 5. Production Features
 
-- **AWS Stream**: Real AWS infrastructure monitoring
-- **Google Stream**: Google Cloud Platform monitoring  
-- **Radio Stream**: Live radio with 300+ stations
-- **Learn Stream**: DevOps learning with Wikipedia integration
-- **CV Stream**: Professional profile with pixel avatar
-- **Interactive Terminal**: Cyberpunk-style command interface
-
-### 6. Monitoring
-
-The site includes:
-- Real-time AWS service health monitoring
-- Google Cloud status tracking
-- Live radio streaming
-- Interactive learning platform
-- Professional CV with animations
-
-### 7. Security
-
-- CORS protection for external APIs
-- Input validation for all endpoints
-- Secure container deployment
-- Environment-based configuration
+This site includes real-time data streams from AWS, Google Cloud, radio stations, and a learning platform. Check the main README for full feature list.

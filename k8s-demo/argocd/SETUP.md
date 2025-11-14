@@ -1,4 +1,26 @@
-# ArgoCD Setup Instructions
+# ArgoCD GitOps Setup (Demonstration)
+
+## Why This Is A Demo
+
+I've included this ArgoCD setup as a demonstration of GitOps principles and modern deployment tools. However, I'm not using it for actual production deployments in this repository.
+
+**Why I'm not using GitOps here:**
+- My `k8s/` directory contains production configurations (domain names, server details) that I keep private for security
+- ArgoCD requires Kubernetes manifests to be in the Git repository to watch and sync them
+- In a public repository, exposing production configs would reveal sensitive infrastructure details (origin server IPs, internal architecture)
+- For this portfolio project, GitHub Actions handles deployments via `kubectl rollout restart` which is more practical
+
+**How I'd set this up in a real production environment:**
+- Use a **private repository** for Kubernetes manifests
+- ArgoCD watches the private repo and auto-deploys changes
+- Remove the `kubectl rollout restart` step from `.github/workflows/deploy.yml` since ArgoCD handles deployments
+- This provides true GitOps: Git is the source of truth, ArgoCD ensures cluster matches Git state
+
+If you're setting this up in your own environment, follow the instructions below. Once ArgoCD is managing your deployments, you can remove the manual deployment step from your CI/CD pipeline.
+
+---
+
+## ArgoCD Setup Instructions
 
 ## 1. Install ArgoCD
 
