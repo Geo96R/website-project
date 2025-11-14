@@ -24,6 +24,10 @@ If you get "record already exists" error:
 2. Push any change to trigger Terraform again
 3. Terraform will create and manage them
 
-## WAF/Security Headers
+For a bit more clarity, if you push this while you have existing record it will fail thats ok
+unless you plan to move everything to full terraform, go to https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs
+and reconstruct things in a way that both your API capabilities and the terraform can fully manage your entire application at the cloudflare level IMO
+Deleting records constantly and recreating is a bit of a waste of time resources and production efficency
 
-Keep managing WAF rules manually in CF dashboard - Terraform rulesets conflict with existing rules.
+Further more if your site was live previouslly to adding Terraform
+and you delete your dns records to play with this, make sure to restart your application with a good ol kubectl rollout restart and then wait for it to be up [kubectl get pods -w]
