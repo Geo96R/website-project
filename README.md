@@ -6,7 +6,7 @@ a bit of hopefull inspirations to try do things that are perhaps at times beyond
 inspiring to be better and share my knowledge if can is why i made this, While i don't have 500years of experience from the year 1525(Sorry was born too late) i can still make up with the passion i have for the field for the learning.
 Enjoy what i made, be happy be healthy work hard and believe in your self.
 
-**Current Version: v1.1** - Major responsive design overhaul with proper mobile support
+**Current Version: v1.2** - Added Infrastructure as Code with Terraform + GitHub Actions automationtter
 
 Note any and all here may be subject for future change if i want to scrape and redo stuff this why ill have versions you can use wayback archive(if they index this beautiful creation) to see previous version
 i will try keep it updated as much as possible wether it is new docker/k8s versions or next js. but life happens so be strong! and google away
@@ -28,13 +28,17 @@ i will try keep it updated as much as possible wether it is new docker/k8s versi
 - 3D visualizations using Three.js and amCharts
 - Mobile responsive design
 - Docker + Kubernetes deployment ready
+- Infrastructure as Code with Terraform
+- Automated CI/CD with GitHub Actions
+- Cloudflare DNS, WAF, and SSL management
 
 ## Tech Stack
 
 - **Frontend**: Next.js 14, React, Framer Motion, Tailwind CSS
 - **3D Graphics**: Three.js, amCharts 5
 - **APIs**: AWS Health, Google Cloud Status, Radio Browser, Wikipedia
-- **Deployment**: Docker, Kubernetes, Vercel
+- **Infrastructure**: Terraform (Cloudflare provider), GitHub Actions
+- **Deployment**: Docker, Kubernetes (K3s), GitHub Container Registry
 
 ## Quick Start
 
@@ -93,6 +97,9 @@ npm start
 │   └── cv/                # CV page
 ├── components/            # React components
 ├── docker/               # Docker configuration
+├── infra/                # Infrastructure as Code
+│   └── cloudflare/       # Cloudflare Terraform configs
+├── .github/workflows/    # GitHub Actions CI/CD
 ├── styles/               # Global styles
 └── public/               # Static assets
 ```
@@ -119,19 +126,38 @@ npm start
 
 ## Deployment
 
-### Vercel (Easiest)
-1. Push to GitHub
-2. Connect to Vercel
-3. Deploy automatically
+### Automated CI/CD (Recommended)
+This project uses GitHub Actions for automated deployments:
+- **Docker Build**: Automatically builds and pushes to GHCR on push to main
+- **Kubernetes Deploy**: Auto-deploys to K3s cluster after image push
+- **Terraform**: Manages Cloudflare DNS, WAF, and SSL automatically
 
-### Docker
+See `.github/workflows/` for pipeline configs.
+
+### Infrastructure Management
+Cloudflare is managed via Terraform:
+```bash
+cd infra/cloudflare
+terraform init
+terraform plan
+terraform apply
+```
+
+See `infra/cloudflare/README.md` for setup instructions.
+
+### Manual Deployment
+
+**Docker:**
 ```bash
 docker build -f docker/Dockerfile -t your-registry/website-project:latest .
 docker push your-registry/website-project:latest
 ```
 
-### Kubernetes
-See [DEPLOYMENT.md](DEPLOYMENT.md) for Kubernetes deployment instructions.
+**Kubernetes:**
+```bash
+kubectl apply -f k8s/
+kubectl rollout restart deployment/website-project
+```
 
 ## License
 
