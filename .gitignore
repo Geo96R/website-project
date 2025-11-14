@@ -4,6 +4,10 @@ node_modules/
 .pnp.js
 
 # Testing
+# /coverage (uncomment if you add test coverage)
+# Kubernetes
+k8s/
+# Next.js
 /.next/
 /out/
 
