@@ -48,7 +48,9 @@
   - Features: 24/7 news, multiple languages
 
 ## Technical Infrastructure
-- **Next.js 14** - React framework
+
+### Frontend & UI
+- **Next.js 16** - React framework
   - Website: https://nextjs.org/
   - Used for: Full-stack web application
   - Features: API routes, server-side rendering, static generation
@@ -58,7 +60,7 @@
   - Used for: Smooth animations and transitions
   - Features: Border animations, content reveals, interactive elements
 
-- **Tailwind CSS** - Utility-first CSS framework
+- **Tailwind CSS 3** - Utility-first CSS framework
   - Website: https://tailwindcss.com/
   - Used for: Responsive design and styling
   - Features: Custom Tron color scheme, responsive layouts
@@ -68,15 +70,94 @@
   - Used for: 3D stars and satellite visualizations
   - Features: WebGL rendering, particle systems, animations
 
+### Kubernetes Networking & Ingress
+
+- **Ingress NGINX** - Kubernetes Ingress Controller (Legacy)
+  - Website: https://kubernetes.github.io/ingress-nginx/
+  - GitHub: https://github.com/kubernetes/ingress-nginx
+  - Used for: Legacy ingress routing (kept in k8s-demo for reference)
+  - ⚠️ **Retirement Notice**: [Ingress NGINX is being retired in March 2026](https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/)
+  - Status: No longer receiving updates after March 2026
+
+- **Contour** - High-performance Kubernetes ingress controller
+  - Website: https://projectcontour.io/
+  - GitHub: https://github.com/projectcontour/contour
+  - Documentation: https://projectcontour.io/docs/
+  - Used for: Gateway API controller implementation
+  - Features: Envoy-powered, Gateway API support, advanced routing, TLS termination
+  - Why: Modern, actively maintained, better performance than Nginx
+
+- **Gateway API** - The future of Kubernetes networking
+  - Website: https://gateway-api.sigs.k8s.io/
+  - GitHub: https://github.com/kubernetes-sigs/gateway-api
+  - Documentation: https://gateway-api.sigs.k8s.io/
+  - Used for: Modern ingress/routing configuration
+  - Features: Role-based API design, better separation of concerns, multi-layer routing
+  - Why: Official replacement for Ingress, actively developed by Kubernetes SIG Network
+
+### Infrastructure as Code
+
+- **Terraform** - Infrastructure as Code tool
+  - Website: https://www.terraform.io/
+  - Documentation: https://developer.hashicorp.com/terraform/docs
+  - Used for: Cloudflare DNS, WAF, and SSL management
+  - Features: Declarative infrastructure, state management, automated provisioning
+  - Provider: [Cloudflare Terraform Provider](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs)
+
+- **Cloudflare** - DNS, WAF, and SSL management
+  - Website: https://www.cloudflare.com/
+  - Terraform Provider: https://registry.terraform.io/providers/cloudflare/cloudflare
+  - Used for: DNS management, Web Application Firewall, SSL/TLS certificates
+  - Features: DDoS protection, CDN, DNS management, security rules
+
+### Observability & Monitoring
+
+- **Grafana Cloud** - Observability platform
+  - Website: https://grafana.com/products/cloud/
+  - Documentation: https://grafana.com/docs/grafana-cloud/
+  - Used for: Metrics, logs, traces, and profiling
+  - Features: 
+    - Prometheus metrics collection
+    - Loki log aggregation
+    - OpenTelemetry trace collection
+    - Pyroscope continuous profiling
+    - Grafana Alloy for data collection
+  - Why: Unified observability, managed service, easy integration
+
+- **OpenTelemetry** - Observability framework
+  - Website: https://opentelemetry.io/
+  - Documentation: https://opentelemetry.io/docs/
+  - Used for: Application instrumentation (traces, metrics)
+  - Features: Vendor-neutral, auto-instrumentation, standard protocols
+  - Integration: Sends data to Grafana Cloud via OTLP
+
 ## Special Thanks
+
+### Open Source Communities
 - **Radio Browser Community** - For maintaining the free radio database
 - **SomaFM** - For providing high-quality independent radio streams
 - **BBC** - For global news coverage
 - **Radio Paradise** - For commercial-free music
 - **amCharts** - For beautiful 3D visualizations
+
+### Framework & Library Teams
 - **Next.js Team** - For the amazing React framework
 - **Framer Motion** - For smooth animations
 - **Tailwind CSS** - For rapid UI development
+- **Three.js** - For powerful 3D graphics
+
+### Infrastructure & DevOps Tools
+- **Project Contour** - For the excellent Gateway API implementation
+- **Kubernetes SIG Network** - For Gateway API development
+- **Grafana Labs** - For Grafana Cloud and observability tools
+- **HashiCorp** - For Terraform and infrastructure automation
+- **Cloudflare** - For DNS, security, and CDN services
+
+### Migration & Modernization
+Special thanks to the Kubernetes community for:
+- Providing clear migration path from Ingress to Gateway API
+- Maintaining backward compatibility during transitions
+- Excellent documentation and community support
 
 ---
 Built with ❤️ by George Tatevosov
