@@ -104,6 +104,8 @@ export default function CV() {
         { name: 'Ansible', category: 'Automation', details: ['Configuration Management', 'Infrastructure as Code', 'Playbooks'] },
         { name: 'Jenkins', category: 'CI/CD', details: ['Continuous Integration', 'Pipeline Automation', 'Build Management'] },
         { name: 'Terraform', category: 'IaC', details: ['Infrastructure as Code', 'Cloud Provisioning', 'State Management'] },
+        { name: 'Contour', category: 'Ingress', details: ['Gateway API Controller', 'Envoy Proxy', 'Kubernetes Ingress', 'TLS Termination'] },
+        { name: 'Gateway API', category: 'Networking', details: ['Kubernetes Networking Standard', 'HTTPRoute', 'Gateway Resources', 'Modern Ingress'] },
         { name: 'AWS', category: 'Cloud', details: ['EC2', 'S3', 'RDS', 'Lambda', 'CloudFormation', 'IAM Roles', 'EKS', 'CloudWatch', 'WorkMail', 'SES', 'VPC', 'Route53'] },
         { name: 'GCP', category: 'Cloud', details: ['Compute Engine', 'Cloud Storage', 'Kubernetes Engine'] },
         { name: 'Prometheus', category: 'Monitoring', details: ['Metrics Collection', 'Alerting', 'Grafana Integration'] },
@@ -130,7 +132,10 @@ export default function CV() {
         { name: 'Linode', status: 'Active', color: 'green' },
         { name: 'Vultr', status: 'Active', color: 'purple' },
         { name: 'Contabo', status: 'Active', color: 'red' },
-        { name: 'Lightsail', status: 'Active', color: 'yellow' }
+        { name: 'Lightsail', status: 'Active', color: 'yellow' },
+        { name: 'OMC', status: 'Active', color: 'blue' },
+        { name: 'Kamatera', status: 'Active', color: 'green' },
+        { name: 'OVHcloud', status: 'Active', color: 'purple' }
       ]
     },
     // Not much to say here..
@@ -204,7 +209,7 @@ export default function CV() {
             setHasDecodedOnce(true);
           }, 500);
         }
-      }, 100);
+      }, 30);
 
       return () => clearInterval(interval);
     }

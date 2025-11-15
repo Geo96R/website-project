@@ -9,7 +9,7 @@ export default function StreamSelector({ onStreamSelect }) {
   const streams = [
     { id: 'aws', name: 'AWS STREAM', subtitle: 'Global Infrastructure', active: true },
     { id: 'google', name: 'GOOGLE STREAM', subtitle: 'Cloud Platform', active: true },
-    { id: 'infrastucture', name: 'INFRASTRUCTURE STREAM', subtitle: 'How it came to be', active: false },
+    { id: 'infrastructure', name: 'INFRASTRUCTURE STREAM', subtitle: 'The whole show', active: true },
     { id: 'learn', name: 'LEARN STREAM', subtitle: 'DevOps Knowledge Base', active: true },
     { id: 'radio', name: 'RADIO STREAM', subtitle: 'Live Audio Broadcast', active: true },
     { id: 'cv', name: 'CV STREAM', subtitle: 'Professional Profile', active: true },
